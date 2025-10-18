@@ -45,3 +45,8 @@ format:
 clean:
 	@echo "🧹 Limpando arquivos de build e dependências..."
 	@rm -rf .next node_modules yarn.lock package-lock.json
+
+prisma-generate:
+	@echo "🔧 Gerando cliente Prisma..."
+	@$(NPM) exec prisma generate
+	@echo "✅ Cliente Prisma gerado com sucesso!"
