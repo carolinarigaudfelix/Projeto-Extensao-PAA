@@ -1,15 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// 1. Informa ao Prisma qual cliente ele deve gerar
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
+// 2. Define a fonte de dados (nosso banco MongoDB)
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "mongodb" // <-- Informa que estamos usando MongoDB
+  url      = env("DATABASE_URL") // <-- Pega a string do arquivo .env
+}
+
+// 3. Define o "Modelo" do Aluno
+// O Prisma vai transformar isso em uma "coleção" no MongoDB
+model Aluno {
+  // O MongoDB usa '_id' como chave primária. Este é o padrão do Prisma.
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  nome      String
+  matricula String   @unique // Garante que não haverá duas matrículas iguais
+  curso     String?  // O '?' significa que este campo é opcional
+
+  dataCadastro DateTime @default(now()) // Pega a data e hora de agora
 }
