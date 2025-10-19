@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "format": "biome format"
+    "format": "biome format",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -15,16 +17,15 @@
     "@mui/icons-material": "^7.3.3",
     "@mui/material": "^7.3.3",
     "@prisma/client": "^6.17.1",
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "@types/bcrypt": "^5.0.2",
     "mongodb": "^6.20.0",
     "next": "15.5.4",
+    "next-auth": "^5.0.0-beta.29",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
+    "zod": "^3.22.4",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -35,7 +36,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
-    "nodemon": "^3.1.10",
     "prisma": "^6.17.1",
     "typescript": "^5"
   }
