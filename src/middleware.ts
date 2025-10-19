@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
 
   // proteger dashboard inteiro: deve haver token
   if (path.startsWith('/dashboard') && !token) {
-    const login = new URL('/login', req.url);
+    const login = new URL('/auth/login', req.url);
     login.searchParams.set('from', path);
     return NextResponse.redirect(login);
   }

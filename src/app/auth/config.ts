@@ -8,7 +8,7 @@ import Credentials from 'next-auth/providers/credentials';
 
 export const authConfig: NextAuthConfig = {
   pages: {
-    signIn: '/login',
+    signIn: '/auth/login',
   },
   providers: [
     Credentials({
@@ -16,7 +16,6 @@ export const authConfig: NextAuthConfig = {
         email: { label: 'Email', type: 'email' },
         senha: { label: 'Senha', type: 'password' },
       },
-      // signature expected by next-auth: Partial<Record<..., unknown>>
       async authorize(
         credentials: Partial<Record<'email' | 'senha', unknown>> | undefined,
       ) {
@@ -34,9 +33,7 @@ export const authConfig: NextAuthConfig = {
         const user = await prisma.usuario.findUnique({ where: whereClause });
         if (!user?.senhaHash) return null;
 
-        // garantir tipos string e evitar erro de compilação
         if (typeof senha !== 'string') return null;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const senhaCorreta = await compare(senha, user.senhaHash);
         if (!senhaCorreta) return null;
 
