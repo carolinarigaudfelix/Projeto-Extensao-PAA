@@ -63,28 +63,39 @@ export default function LoginPage() {
         bgcolor: (theme) => theme.palette.grey[100],
         display: 'flex',
         alignItems: 'center',
+        py: { xs: 2, sm: 4 },
+        px: { xs: 2, sm: 0 },
       }}
     >
       <Container maxWidth="sm">
-        <Stack spacing={3}>
+        <Stack spacing={{ xs: 2, sm: 3 }}>
           <Card elevation={3}>
             <CardHeader
+              sx={{ pb: 1 }}
               title={
                 <Box display="flex" alignItems="center" gap={1}>
                   <LockOutlinedIcon color="primary" />
-                  <Typography variant="h5" fontWeight={600}>
+                  <Typography
+                    variant="h5"
+                    fontWeight={600}
+                    sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                  >
                     Sistema PAA
                   </Typography>
                 </Box>
               }
               subheader={
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Programa de Apoio Acadêmico
                 </Typography>
               }
             />
             <Divider />
-            <CardContent>
+            <CardContent sx={{ px: { xs: 2, sm: 3 } }}>
               <Box component="form" onSubmit={onSubmit} noValidate>
                 <Stack spacing={2}>
                   {error && (
@@ -102,6 +113,7 @@ export default function LoginPage() {
                     onChange={handleChange}
                     required
                     fullWidth
+                    size="medium"
                   />
                   <TextField
                     label="Senha"
@@ -112,6 +124,7 @@ export default function LoginPage() {
                     onChange={handleChange}
                     required
                     fullWidth
+                    size="medium"
                   />
                   <Button
                     type="submit"
@@ -119,6 +132,7 @@ export default function LoginPage() {
                     color="success"
                     size="large"
                     disabled={disabled}
+                    fullWidth
                   >
                     {loading ? 'Entrando...' : 'Entrar'}
                   </Button>
@@ -127,27 +141,51 @@ export default function LoginPage() {
             </CardContent>
           </Card>
 
-          <Paper variant="outlined" sx={{ p: 2, display: 'flex', gap: 2 }}>
-            <InfoOutlinedIcon color="info" sx={{ mt: 0.5 }} />
+          <Paper
+            variant="outlined"
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              display: 'flex',
+              gap: { xs: 1, sm: 2 },
+            }}
+          >
+            <InfoOutlinedIcon
+              color="info"
+              sx={{ mt: 0.5, fontSize: { xs: 20, sm: 24 } }}
+            />
             <Box>
-              <Typography variant="subtitle2" gutterBottom>
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Primeiro acesso?
               </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                paragraph
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, mb: 1 }}
+              >
                 Se ainda não existe nenhum usuário no sistema, você precisa
                 criar o primeiro usuário administrador através do Prisma Studio.
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
                 Execute:{' '}
                 <Box
                   component="code"
                   sx={{
                     bgcolor: 'info.light',
-                    px: 1,
+                    px: { xs: 0.75, sm: 1 },
                     py: 0.5,
                     borderRadius: 1,
-                    fontSize: 12,
+                    fontSize: { xs: 10, sm: 12 },
                     fontFamily: 'monospace',
+                    display: 'inline-block',
                   }}
                 >
                   make prisma-studio
@@ -157,8 +195,13 @@ export default function LoginPage() {
           </Paper>
 
           <Box textAlign="center" mt={2}>
-            <Typography variant="caption" color="text.disabled">
-              © {new Date().getFullYear()} Planejamento de Acessibilidade na Avaliação
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+            >
+              © {new Date().getFullYear()} Planejamento de Acessibilidade na
+              Avaliação
             </Typography>
           </Box>
         </Stack>

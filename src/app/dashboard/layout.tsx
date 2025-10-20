@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 
-// Largura do Drawer permanente definida em Sidebar (240)
+// Largura do Drawer definida em Sidebar (240)
 const SIDEBAR_WIDTH = 240;
 
 export default function DashboardLayout({
@@ -13,8 +13,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Caso futuramente queira tornar Sidebar responsiva (toggle)
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   return (
     <Box
@@ -24,20 +27,33 @@ export default function DashboardLayout({
         bgcolor: (theme) => theme.palette.background.default,
       }}
     >
-      {/* Sidebar permanente */}
-      {sidebarOpen && <Sidebar />}
-      {/* Conteúdo com margem à esquerda para não ficar sob Drawer */}
+      {/* Sidebar: drawer temporário em mobile, permanente em desktop */}
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onClose={handleDrawerToggle}
+        width={SIDEBAR_WIDTH}
+      />
+
+      {/* Conteúdo principal */}
       <Box
         component="div"
         sx={{
           flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
           ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
-          // Ajuste: como Drawer permanente já ocupa espaço, aplicar position absolute somente se quiser overlay
-          // Aqui usamos margin-left para permitir conteúdo visível.
+          width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
         }}
       >
-        <Header onToggleSidebar={() => setSidebarOpen((o) => !o)} />
-        <Box component="main" sx={{ p: 3 }}>
+        <Header onToggleSidebar={handleDrawerToggle} />
+        <Box
+          component="main"
+          sx={{
+            p: { xs: 2, sm: 3 },
+            flex: 1,
+            overflow: 'auto',
+          }}
+        >
           {children}
         </Box>
       </Box>

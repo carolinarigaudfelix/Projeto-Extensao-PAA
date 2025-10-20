@@ -49,25 +49,37 @@ export default function DashboardPage() {
   }, [carregarAlunos]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h5" fontWeight={600} gutterBottom>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Typography
+        variant="h5"
+        fontWeight={600}
+        gutterBottom
+        sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+      >
         Visão Geral
       </Typography>
-      <Box display="flex" flexWrap="wrap" gap={3}>
-        <Box flex="1 1 300px" maxWidth={360}>
-          <Card elevation={2}>
-            <CardHeader
-              avatar={<PeopleAltOutlinedIcon color="primary" />}
-              title={
-                <Typography variant="subtitle2" color="text.secondary">
-                  Total de Alunos
-                </Typography>
-              }
-              action={
-                <Tooltip title="Atualizar">
-                  <span>
-                    <IconButton
-                      onClick={carregarAlunos}
+      <Box
+        display="grid"
+        gridTemplateColumns={{
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          lg: 'repeat(3, 1fr)',
+        }}
+        gap={{ xs: 2, sm: 3 }}
+      >
+        <Card elevation={2}>
+          <CardHeader
+            avatar={<PeopleAltOutlinedIcon color="primary" />}
+            title={
+              <Typography variant="subtitle2" color="text.secondary">
+                Total de Alunos
+              </Typography>
+            }
+            action={
+              <Tooltip title="Atualizar">
+                <span>
+                  <IconButton
+                    onClick={carregarAlunos}
                       disabled={loadingAlunos}
                       size="small"
                     >
@@ -102,7 +114,6 @@ export default function DashboardPage() {
               </Box>
             </CardContent>
           </Card>
-        </Box>
         {/* Outros cards podem ser adicionados aqui */}
       </Box>
     </Container>

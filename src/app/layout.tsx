@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'PAA - Planejamento de Acessibilidade na Avaliação',
   description: 'Sistema de gestão para Planejamento de Acessibilidade na Avaliação - Apoio a alunos com necessidades especiais',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
 };
 
 export default function RootLayout({

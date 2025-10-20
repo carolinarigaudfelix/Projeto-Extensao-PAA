@@ -18,6 +18,7 @@ import {
   ListItemText,
   Tooltip,
   Typography,
+  useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { signOut, useSession } from 'next-auth/react';
@@ -58,10 +59,17 @@ const navigation: NavItem[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+  width: number;
+}
+
+export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   if (!session?.user) return null;
 
@@ -73,19 +81,8 @@ export function Sidebar() {
         .join('')
     : '?';
 
-  return (
-    <Drawer
-      variant="permanent"
-      PaperProps={{
-        sx: {
-          width: 240,
-          bgcolor: theme.palette.grey[900],
-          color: theme.palette.grey[100],
-          display: 'flex',
-          flexDirection: 'column',
-        },
-      }}
-    >
+  const drawerContent = (
+    <>
       <Box sx={{ px: 2, py: 2 }}>
         <Typography variant="h6" fontWeight={600}>
           PAA Dashboard
@@ -104,6 +101,7 @@ export function Sidebar() {
                     component={NextLink}
                     href={item.href}
                     selected={active}
+                    onClick={isMobile ? onClose : undefined}
                     sx={{
                       py: 1,
                       '&.Mui-selected': {
@@ -159,6 +157,49 @@ export function Sidebar() {
           </IconButton>
         </Tooltip>
       </Box>
-    </Drawer>
+    </>
+  );
+
+  return (
+    <Box component="nav" sx={{ width: { md: width }, flexShrink: { md: 0 } }}>
+      {/* Drawer temporário para mobile */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onClose}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            width,
+            bgcolor: theme.palette.grey[900],
+            color: theme.palette.grey[100],
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Drawer permanente para desktop */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          '& .MuiDrawer-paper': {
+            width,
+            bgcolor: theme.palette.grey[900],
+            color: theme.palette.grey[100],
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+    </Box>
   );
 }
