@@ -62,7 +62,7 @@ src/
 - Acompanhamento de desempenho
 - Histórico de avaliações
 
-## � Modelos do Banco de Dados
+## 🎲 Modelos do Banco de Dados
 
 ### Estudante
 - Informações pessoais (nome, idade, matrícula, email, telefone)
@@ -131,6 +131,69 @@ make dev
 O aplicativo estará disponível em `http://localhost:3000`
 As rotas da API estarão disponíveis em `http://localhost:3000/api`
 
+### Criando o Primeiro Usuário
+
+Para acessar o sistema, você precisa criar um usuário administrador:
+
+**Opção 1: Usando Prisma Studio (Recomendado)**
+```bash
+make prisma-studio
+```
+1. Acesse `http://localhost:5555`
+2. Clique em "Usuario"
+3. Clique em "Add record"
+4. Preencha os campos:
+   - `nome`: Seu nome completo
+   - `cpf`: CPF único (ex: 12345678900)
+   - `email`: Seu email
+   - `senhaHash`: Use um hash bcrypt (veja abaixo como gerar)
+   - `tipo`: ADMIN
+   - `criadoPor`: sistema
+   - `atualizadoPor`: sistema
+   - `isActive`: true
+
+**Para gerar o hash da senha**, execute no terminal Node.js:
+```bash
+node -e "const bcrypt = require('bcrypt'); bcrypt.hash('sua-senha-aqui', 10).then(hash => console.log(hash));"
+```
+
+**Opção 2: Via Script**
+
+Crie um arquivo `scripts/create-user.ts`:
+```typescript
+import { hash } from 'bcrypt';
+import prisma from '../src/lib/prisma';
+
+async function main() {
+  const senhaHash = await hash('admin123', 10);
+
+  const user = await prisma.usuario.create({
+    data: {
+      nome: "Administrador",
+      cpf: "12345678900",
+      email: "admin@example.com",
+      senhaHash,
+      tipo: "ADMIN",
+      criadoPor: "sistema",
+      atualizadoPor: "sistema"
+    }
+  });
+
+  console.log('✅ Usuário criado:', user.email);
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
+```
+
+Execute:
+```bash
+npx tsx scripts/create-user.ts
+```
+
+Depois acesse `/auth/login` com as credenciais criadas!
+
 ### Troubleshooting
 
 1. **Erro de conexão com MongoDB:**
@@ -162,7 +225,41 @@ As rotas da API estarão disponíveis em `http://localhost:3000/api`
 
 ### 🔒 Autenticação
 
-A API utiliza autenticação via NextAuth.js com JWT (JSON Web Token). Para endpoints protegidos, inclua o token de sessão.
+A API utiliza **NextAuth.js** com autenticação baseada em sessão e cookies HTTP-only.
+
+#### Como acessar o sistema:
+
+1. **Crie um usuário no banco de dados** (via Prisma Studio ou script):
+```javascript
+// Exemplo usando Prisma Client
+import { hash } from 'bcrypt';
+import prisma from './lib/prisma';
+
+const senhaHash = await hash('sua-senha', 10);
+await prisma.usuario.create({
+  data: {
+    nome: "Admin User",
+    cpf: "12345678900",
+    email: "admin@example.com",
+    senhaHash: senhaHash,
+    tipo: "ADMIN",
+    criadoPor: "sistema",
+    atualizadoPor: "sistema"
+  }
+});
+```
+
+2. **Faça login na aplicação**:
+   - Acesse `http://localhost:3000/auth/login`
+   - Digite seu email e senha
+   - O NextAuth criará automaticamente uma sessão JWT
+   - O token fica armazenado em cookies seguros
+
+3. **Rotas protegidas**:
+   - `/dashboard/*` - Requer autenticação
+   - `/api/alunos/*` - Requer autenticação + perfil adequado (ADMIN, COORDENADOR, PROFESSOR ou PEDAGOGO)
+
+**Nota**: Você **não precisa** incluir manualmente tokens Bearer. O NextAuth gerencia a autenticação automaticamente via cookies.
 
 ### Estudantes
 
