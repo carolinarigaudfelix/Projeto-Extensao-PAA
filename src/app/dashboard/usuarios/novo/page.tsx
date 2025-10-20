@@ -1,284 +1,181 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useRoleGuard } from '@/lib/route-guard';
 import {
+  Alert,
   Box,
   Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
+  CircularProgress,
+  MenuItem,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
-  useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+} from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-interface Membro {
+const tiposValidos = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] as const;
+
+interface FormData {
   nome: string;
+  email: string;
+  senha: string;
   cpf: string;
-  telefone: string;
+  tipo: string;
 }
 
-export default function EquipePedagogica() {
-  const [membros, setMembros] = useState<Membro[]>([]);
-  const [open, setOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [form, setForm] = useState<Membro>({ nome: "", cpf: "", telefone: "" });
-
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const handleOpen = (index: number | null = null) => {
-    if (index !== null) {
-      setForm(membros[index]);
-      setEditIndex(index);
-    } else {
-      setForm({ nome: "", cpf: "", telefone: "" });
-      setEditIndex(null);
-    }
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setForm({ nome: "", cpf: "", telefone: "" });
-    setEditIndex(null);
-  };
+export default function NovoUsuarioPage() {
+  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(['ADMIN']);
+  const router = useRouter();
+  const [form, setForm] = useState<FormData>({
+    nome: '',
+    email: '',
+    senha: '',
+    cpf: '',
+    tipo: 'PROFESSOR',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    if (form.nome && form.cpf && form.telefone) {
-      if (editIndex !== null) {
-        setMembros((prev) =>
-          prev.map((m, i) => (i === editIndex ? form : m))
-        );
-      } else {
-        setMembros((prev) => [...prev, form]);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setSaving(true);
+
+    try {
+      const res = await fetch('/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j.error || 'Erro ao criar usuário');
+        return;
       }
-      handleClose();
+
+      setSuccess('Usuário criado com sucesso!');
+      setTimeout(() => {
+        router.push('/dashboard/usuarios');
+        router.refresh();
+      }, 800);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro inesperado');
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
-  const handleRemove = (index: number) => {
-    setMembros((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const linhasPlaceholder = Array.from({ length: Math.max(0, 5 - membros.length) });
+  if (isLoading)
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Carregando...
+      </Typography>
+    );
+  if (!isAuthenticated)
+    return <Alert severity="error">Você precisa estar autenticado.</Alert>;
+  if (!hasRole)
+    return <Alert severity="error">Acesso restrito a administradores.</Alert>;
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100dvh",
-        bgcolor: "#fff",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-      <Container
-        maxWidth={false}
-        sx={{
-          width: "100%",
-          maxWidth: 414,
-          display: "flex",
-          flexDirection: "column",
-          px: 2,
-          pt: 2,
-          pb: 12,
-          color: "#000",
-          flex: 1,
-        }}
-      >
-        {/* Cabeçalho */}
-        <Typography variant="h6" sx={{ fontSize: "1rem", mb: 1 }}>
-          Planejamento de Acessibilidade na Avaliação - PAA
-        </Typography>
-        <Box sx={{ height: 4, bgcolor: "#e0e0e0", borderRadius: 2, mb: 0.5 }}>
-          <Box sx={{ width: "20%", height: 1, bgcolor: "#2e7d32", borderRadius: 2 }} />
-        </Box>
-        <Typography sx={{ fontSize: 12, mb: 2 }}>20% concluído</Typography>
-
-        {/* Seção Equipe Pedagógica */}
-        <Typography sx={{ fontWeight: 600 }}>2. Equipe Pedagógica</Typography>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 1,
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => handleOpen(null)}
-            sx={{ textTransform: "none", color: "#000", fontWeight: 500 }}
-          >
-            + Adicionar membro
-          </Button>
-
-          <Button
-            variant="text"
-            onClick={() => alert("Importar equipe")}
-            sx={{ textTransform: "none", color: "#000", fontWeight: 500 }}
-          >
-            Importar Equipe
-          </Button>
-        </Box>
-
-        <TableContainer
-          component={Paper}
-          sx={{
-            border: "1px dashed #ccc",
-            bgcolor: "#fff",
-            height: 245, // 👈 altura exata (5 linhas + header)
-            overflowY: "auto",
-            mb: 3,
-          }}
-        >
-          <Table size="small" stickyHeader>
-            <TableHead>
-              <TableRow sx={{ "& th": { bgcolor: "#f5f5f5" } }}>
-                <TableCell sx={{ color: "#000", fontWeight: 700 }}>Nome</TableCell>
-                <TableCell sx={{ color: "#000", fontWeight: 700 }}>CPF</TableCell>
-                <TableCell sx={{ color: "#000", fontWeight: 700 }}>Telefone</TableCell>
-                <TableCell sx={{ color: "#000", fontWeight: 700 }} align="center">
-                  Ações
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {membros.map((m, i) => (
-                <TableRow key={i}>
-                  <TableCell sx={{ color: "#000", height: 38 }}>{m.nome}</TableCell>
-                  <TableCell sx={{ color: "#000" }}>{m.cpf}</TableCell>
-                  <TableCell sx={{ color: "#000" }}>{m.telefone}</TableCell>
-                  <TableCell align="center" sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-                    <IconButton
-                      size="small"
-                      color="success"
-                      onClick={() => handleOpen(i)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleRemove(i)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {linhasPlaceholder.map((_, i) => (
-                <TableRow key={`placeholder-${i}`}>
-                  <TableCell sx={{ height: 38 }} />
-                  <TableCell />
-                  <TableCell />
-                  <TableCell />
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        {/* Objetivos */}
-        <Typography sx={{ fontWeight: 600, mb: 1 }}>
-          3. Objetivos para Avaliação
-        </Typography>
-        <TextField
-          placeholder="Descreva os objetivos para esta avaliação."
-          multiline
-          minRows={5}
-          fullWidth
-          sx={{
-            mb: 2,
-            bgcolor: "#fff",
-            "& .MuiInputBase-input": { color: "#000" },
-          }}
-        />
-      </Container>
-
-      {/* Footer fixo */}
+    <Paper sx={{ maxWidth: 600, p: 3 }} elevation={1}>
+      <Typography variant="h5" fontWeight={600} mb={2}>
+        Novo Usuário
+      </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
       <Box
-        sx={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          bgcolor: "#fff",
-          py: 2,
-          borderTop: "1px solid #ddd",
-          display: "flex",
-          justifyContent: "center",
-        }}
+        component="form"
+        onSubmit={handleSubmit}
+        display="flex"
+        flexDirection="column"
+        gap={2}
       >
-        <Box sx={{ display: "flex", gap: 1, maxWidth: 414, width: "100%", px: 2 }}>
-          <Button variant="outlined" color="success" fullWidth>
-            Anterior
+        <TextField
+          name="nome"
+          label="Nome"
+          value={form.nome}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          name="email"
+          label="Email"
+          type="email"
+          value={form.email}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          name="senha"
+          label="Senha"
+          type="password"
+          value={form.senha}
+          onChange={handleChange}
+          required
+          fullWidth
+          inputProps={{ minLength: 6 }}
+          helperText="Mínimo 6 caracteres"
+        />
+        <TextField
+          name="cpf"
+          label="CPF"
+          value={form.cpf}
+          onChange={handleChange}
+          required
+          fullWidth
+          inputProps={{ pattern: '[0-9]{11}', inputMode: 'numeric' }}
+          helperText="11 dígitos (apenas números)"
+        />
+        <TextField
+          name="tipo"
+          label="Tipo"
+          value={form.tipo}
+          onChange={handleChange}
+          required
+          select
+          fullWidth
+        >
+          {tiposValidos.map((t) => (
+            <MenuItem key={t} value={t}>
+              {t}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Box display="flex" gap={2} mt={1}>
+          <Button type="submit" variant="contained" disabled={saving}>
+            {saving ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              'Criar Usuário'
+            )}
           </Button>
-          <Button variant="contained" color="success" fullWidth>
-            Próximo
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={() => router.back()}
+          >
+            Cancelar
           </Button>
         </Box>
       </Box>
-
-      {/* Modal */}
-      <Dialog open={open} onClose={handleClose} fullScreen={fullScreen} fullWidth>
-        <DialogTitle sx={{ color: "#000" }}>
-          {editIndex !== null ? "Editar Membro" : "Adicionar Membro"}
-        </DialogTitle>
-        <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="Nome"
-              name="nome"
-              value={form.nome}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="CPF"
-              name="cpf"
-              value={form.cpf}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              label="Telefone"
-              name="telefone"
-              value={form.telefone}
-              onChange={handleChange}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="inherit">
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} variant="contained" color="success">
-            Salvar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </Paper>
   );
 }

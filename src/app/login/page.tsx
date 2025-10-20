@@ -158,7 +158,7 @@ export default function LoginPage() {
 
           <Box textAlign="center" mt={2}>
             <Typography variant="caption" color="text.disabled">
-              © {new Date().getFullYear()} Programa de Apoio Acadêmico
+              © {new Date().getFullYear()} Planejamento de Acessibilidade na Avaliação
             </Typography>
           </Box>
         </Stack>
