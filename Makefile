@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 NPM := source ~/.nvm/nvm.sh && npm
 
-.PHONY: all help setup dev build start lint format clean prisma-push prisma-generate
+.PHONY: all help setup dev build start lint format clean db-push db-gen prisma-studio
 
 all: help
 
@@ -25,11 +25,11 @@ setup:
 	@$(NPM) run prisma:generate
 	@echo "✅ Projeto configurado com sucesso!"
 
-dev: prisma-generate
+dev: db-gen
 	@echo "🚀 Iniciando servidor Next.js..."
 	@$(NPM) run dev
 
-build: prisma-generate
+build: db-gen
 	@echo "🔨 Compilando projeto..."
 	@$(NPM) run build
 
@@ -49,6 +49,16 @@ format:
 clean:
 	@echo "🧹 Limpando arquivos de build e dependências..."
 	@rm -rf .next node_modules .prisma prisma/generated package-lock.json
+
+db-push:
+	@echo "🔄 Sincronizando schema Prisma com o banco de dados..."
+	@$(NPM) run prisma:push
+	@echo "✅ Schema sincronizado com sucesso!"
+
+db-gen:
+	@echo "⚙️  Gerando cliente Prisma..."
+	@$(NPM) run prisma:generate
+	@echo "✅ Cliente Prisma gerado com sucesso!"
 
 prisma-studio:
 	@echo "🛠️ Iniciando Prisma Studio..."
