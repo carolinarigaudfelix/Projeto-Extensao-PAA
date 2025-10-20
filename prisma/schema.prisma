@@ -1,0 +1,116 @@
+// 1. Informa ao Prisma qual cliente ele deve gerar
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Define a fonte de dados (nosso banco MongoDB)
+datasource db {
+  provider = "mongodb" // <-- Informa que estamos usando MongoDB
+  url      = env("DATABASE_URL") // <-- Pega a string do arquivo .env
+}
+
+// Enum para tipos de usuário
+enum TipoUsuario {
+  ADMIN
+  COORDENADOR
+  PROFESSOR
+  PEDAGOGO
+}
+
+// 3. Define o "Modelo" do Estudante
+model Estudante {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Campos de auditoria
+  criado        DateTime @default(now())
+  criadoPor     String
+  atualizado    DateTime @updatedAt
+  atualizadoPor String
+  isActive      Boolean  @default(true)
+
+  // Informações pessoais
+  nome      String
+  idade     Int
+  matricula String  @unique
+  email     String?
+  telefone  String?
+
+  // Informações acadêmicas
+  yearSchooling Int
+  turma         String?
+  curso         String?
+
+  // Necessidades especiais
+  isSpecialNeeds      Boolean @default(false)
+  specialNeedsDetails String?
+
+  // Relacionamentos
+  avaliacoes Avaliacao[]
+}
+
+model MembroPedagogico {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Campos de auditoria
+  criado        DateTime @default(now())
+  criadoPor     String
+  atualizado    DateTime @updatedAt
+  atualizadoPor String
+  isActive      Boolean  @default(true)
+
+  // Informações pessoais
+  nome     String
+  cargo    String
+  email    String?
+  telefone String?
+
+  // Relacionamento com usuário
+  usuario Usuario @relation(fields: [userId], references: [id])
+  userId  String  @unique @db.ObjectId
+
+  // Relacionamentos
+  avaliacoes Avaliacao[]
+}
+
+model Usuario {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Campos de auditoria
+  criado        DateTime @default(now())
+  criadoPor     String
+  atualizado    DateTime @updatedAt
+  atualizadoPor String
+  isActive      Boolean  @default(true)
+
+  // Informações pessoais
+  nome      String
+  cpf       String  @unique
+  email     String  @unique
+  telefone  String?
+  senhaHash String
+
+  // Tipo de usuário
+  tipo TipoUsuario
+
+  // Relacionamentos
+  membroPedagogico MembroPedagogico?
+}
+
+// Modelo para avaliações/acompanhamentos
+model Avaliacao {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Campos de auditoria
+  criado        DateTime @default(now())
+  criadoPor     String
+  atualizado    DateTime @updatedAt
+  atualizadoPor String
+  isActive      Boolean  @default(true)
+
+  // Conteúdo da avaliação
+  data      DateTime
+  descricao String
+
+  // Relacionamentos
+  estudante   Estudante @relation(fields: [estudanteId], references: [id])
+  estudanteId String    @db.ObjectId
+
+  avaliador   MembroPedagogico @relation(fields: [avaliadorId], references: [id])
+  avaliadorId String           @db.ObjectId
+}
