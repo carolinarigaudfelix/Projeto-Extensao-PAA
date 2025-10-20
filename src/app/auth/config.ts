@@ -1,13 +1,33 @@
 import prisma from '@/lib/prisma';
 import { compare } from 'bcrypt';
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig, User } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
 
-// Configuração NextAuth v5 beta
+// Fallback seguro para ambiente de desenvolvimento caso NEXTAUTH_SECRET não esteja definido.
+// Em produção, a variável de ambiente DEVE estar presente.
+function getAuthSecret(): string {
+  if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 0) {
+    return process.env.NEXTAUTH_SECRET;
+  }
+  // Gerar secret pseudo-aleatório em dev para evitar MissingSecret.
+  // Não persistente entre reinícios, apenas evita crash.
+  if (process.env.NODE_ENV !== 'production') {
+    const random = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    return `dev-${random}`;
+  }
+  throw new Error(
+    'NEXTAUTH_SECRET não definido em produção. Configure no arquivo .env',
+  );
+}
+
+// Configuração NextAuth v5
 export const authConfig: NextAuthConfig = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getAuthSecret(),
   session: { strategy: 'jwt' },
-  pages: { signIn: '/auth/login' },
+  pages: { signIn: '/login' },
   providers: [
     Credentials({
       name: 'Credenciais',
@@ -16,39 +36,45 @@ export const authConfig: NextAuthConfig = {
         senha: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string | undefined;
-        const senha = credentials?.senha as string | undefined;
+        const email = credentials?.email?.toString();
+        const senha = credentials?.senha?.toString();
         if (!email) return null;
         if (!senha) return null;
-        const user = await prisma.usuario.findUnique({ where: { email } });
-        if (!user?.senhaHash) return null;
-        const ok = await compare(senha, user.senhaHash);
+        const usuario = await prisma.usuario.findUnique({ where: { email } });
+        if (!usuario?.senhaHash) return null;
+        const ok = await compare(senha, usuario.senhaHash);
         if (!ok) return null;
         return {
-          id: user.id,
-          email: user.email,
-          nome: user.nome,
-          tipo: user.tipo,
-        };
+          id: usuario.id,
+          email: usuario.email,
+          nome: usuario.nome,
+          tipo: usuario.tipo,
+        } satisfies User;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = (user as any).id;
-        token.nome = (user as any).nome;
-        token.tipo = (user as any).tipo;
+        const u = user as User & { tipo: string };
+        (token as JWT & { id?: string; nome?: string; tipo?: string }).id =
+          u.id;
+        (token as JWT & { id?: string; nome?: string; tipo?: string }).nome =
+          u.nome;
+        (token as JWT & { id?: string; nome?: string; tipo?: string }).tipo =
+          u.tipo;
       }
       return token;
     },
     async session({ session, token }) {
+      const t = token as JWT & { id?: string; nome?: string; tipo?: string };
+      const emailFromToken = (token as JWT & { email?: string }).email;
       session.user = {
         ...session.user,
-        id: (token as any).id,
-        nome: (token as any).nome,
-        tipo: (token as any).tipo,
-        email: session.user?.email || (token as any).email || '',
+        id: t.id || '',
+        nome: t.nome || session.user?.name || '',
+        tipo: t.tipo || '',
+        email: session.user?.email || emailFromToken || '',
       };
       return session;
     },

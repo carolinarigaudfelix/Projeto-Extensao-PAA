@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Alunos', href: '/dashboard/alunos' },
-  { name: 'Avaliações', href: '/dashboard/avaliacoes' },
+  { name: 'Dashboard', href: '/dashboard', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
+  { name: 'Alunos', href: '/dashboard/alunos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
+  { name: 'Avaliações', href: '/dashboard/avaliacoes', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
+  { name: 'Usuários', href: '/dashboard/usuarios', roles: ['ADMIN'] },
 ];
 
 export function Sidebar() {
@@ -24,22 +25,24 @@ export function Sidebar() {
 
       <div className="flex-1 overflow-y-auto">
         <nav className="px-2 py-4">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`mb-1 flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
-                  isActive
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
+          {navigation
+            .filter((item) => item.roles.includes(session.user.tipo))
+            .map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`mb-1 flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
+                    isActive
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
         </nav>
       </div>
 

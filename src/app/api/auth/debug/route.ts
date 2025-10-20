@@ -1,14 +1,16 @@
 import { authConfig } from '@/app/auth/config';
-import { getServerSession } from 'next-auth/next';
+import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 
-// Reutiliza a config para obter sessão manualmente
+// Em v5 podemos inicializar NextAuth e usar helper auth() para acessar sessão
+const { auth } = NextAuth(authConfig);
+
 export async function GET() {
   try {
-    const session = await getServerSession(authConfig);
+    const session = await auth();
     return NextResponse.json({ ok: true, session });
   } catch (err) {
-    console.error('[AUTH][debug] erro getServerSession', err);
+    console.error('[AUTH][debug] erro auth()', err);
     return NextResponse.json(
       { ok: false, error: String(err) },
       { status: 500 },

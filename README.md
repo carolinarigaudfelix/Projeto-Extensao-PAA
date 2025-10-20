@@ -27,6 +27,7 @@ src/
   │   │   └── login/        # Página de login
   │   └── api/              # Rotas da API
   │       ├── alunos/       # Endpoints de alunos
+  │       ├── usuarios/     # Endpoints de usuários (CRUD básico)
   │       └── auth/         # Endpoints de autenticação
   ├── lib/                   # Utilitários e configurações
   │   ├── prisma.ts         # Cliente Prisma
@@ -49,6 +50,7 @@ src/
 - Navegação intuitiva
 - Interface responsiva
 - Sidebar com informações do usuário
+ - Páginas de CRUD: `Alunos` (listagem + criação) e `Usuários` (admin only)
 
 ### Gestão de Estudantes
 - Listagem de estudantes
@@ -56,11 +58,17 @@ src/
 - Visualização de detalhes
 - Suporte a necessidades especiais
 - Filtros e busca
+ - Formulário de criação em `/dashboard/alunos/novo`
 
 ### Sistema de Avaliações
 - Registro de avaliações
 - Acompanhamento de desempenho
 - Histórico de avaliações
+
+### Gestão de Usuários (ADMIN)
+- Listagem de usuários em `/dashboard/usuarios`
+- Criação de novos usuários em `/dashboard/usuarios/novo`
+- Campos obrigatórios: nome, email, senha (mín. 6), tipo (perfil), CPF único
 
 ## 🎲 Modelos do Banco de Dados
 
@@ -142,7 +150,7 @@ make prisma-studio
 1. Acesse `http://localhost:5555`
 2. Clique em "Usuario"
 3. Clique em "Add record"
-4. Preencha os campos:
+4. Preencha os campos (mínimo obrigatório):
    - `nome`: Seu nome completo
    - `cpf`: CPF único (ex: 12345678900)
    - `email`: Seu email
@@ -192,7 +200,7 @@ Execute:
 npx tsx scripts/create-user.ts
 ```
 
-Depois acesse `/auth/login` com as credenciais criadas!
+Depois acesse `/login` com as credenciais criadas!
 
 ### Troubleshooting
 
@@ -250,7 +258,7 @@ await prisma.usuario.create({
 ```
 
 2. **Faça login na aplicação**:
-   - Acesse `http://localhost:3000/auth/login`
+   - Acesse `http://localhost:3000/login`
    - Digite seu email e senha
    - O NextAuth criará automaticamente uma sessão JWT
    - O token fica armazenado em cookies seguros
@@ -258,6 +266,7 @@ await prisma.usuario.create({
 3. **Rotas protegidas**:
    - `/dashboard/*` - Requer autenticação
    - `/api/alunos/*` - Requer autenticação + perfil adequado (ADMIN, COORDENADOR, PROFESSOR ou PEDAGOGO)
+    - `/api/usuarios/*` - Requer autenticação + perfil ADMIN
 
 **Nota**: Você **não precisa** incluir manualmente tokens Bearer. O NextAuth gerencia a autenticação automaticamente via cookies.
 
@@ -392,6 +401,47 @@ await prisma.usuario.create({
 }
 ```
 
+### Usuários (ADMIN)
+
+#### Criar novo usuário
+`POST /api/usuarios`
+
+Campos obrigatórios (JSON body):
+```json
+{
+  "nome": "Novo Usuário",
+  "email": "novo.usuario@example.com",
+  "senha": "senhaSegura123",
+  "tipo": "PROFESSOR",
+  "cpf": "98765432100"
+}
+```
+Retorno (201):
+```json
+{
+  "id": "653068f0f0322312b9189999",
+  "nome": "Novo Usuário",
+  "email": "novo.usuario@example.com",
+  "tipo": "PROFESSOR",
+  "cpf": "98765432100",
+  "criado": "2025-10-20T17:20:00.000Z"
+}
+```
+
+#### Listar usuários
+`GET /api/usuarios`
+Retorna lista com: id, nome, email, tipo, cpf, criado, atualizado.
+
+#### Regras
+- Apenas `ADMIN` pode acessar `/dashboard/usuarios` e a rota `/api/usuarios`.
+- Senha mínima de 6 caracteres; armazenada como hash (bcrypt) em `senhaHash`.
+
+### Fluxo de Login e Navegação
+1. Acesso inicial redireciona para `/login`.
+2. Após autenticação com credenciais válidas, usuário é enviado para `/dashboard`.
+3. A navegação lateral só mostra itens compatíveis com o papel (`tipo`).
+4. Formulários de criação validam entrada e exibem mensagens claras de erro.
+
 ## Variáveis de Ambiente
 
 Crie um arquivo `.env` ou `.env.local` na raiz do projeto:
@@ -416,3 +466,67 @@ NEXTAUTH_URL="http://localhost:3000"
 2. Faça commit das mudanças: `git commit -m 'feat: Adiciona nova funcionalidade'`
 3. Envie para a branch: `git push origin feature/nome-da-feature`
 4. Abra um Pull Request
+
+## 📜 Changelog / Alterações Recentes
+
+Esta seção consolida as principais modificações aplicadas recentemente ao projeto (originadas de `ALTERACOES.md`).
+
+### 1. Fluxo de Autenticação
+- Página inicial (`/`) agora redireciona para `/login` (fluxo explícito de entrada)
+- Middleware protege rotas do dashboard exigindo sessão válida
+- Melhor tratamento de primeiro acesso (instruções para criação do primeiro ADMIN)
+
+### 2. Tela de Login
+- UI limpa e profissional
+- Mensagens de erro com melhor feedback
+- Card explicativo sobre criação de usuário inicial (ADMIN)
+- Labels e acessibilidade aprimoradas
+
+### 3. Gestão de Usuários (ADMIN)
+- Listagem em `/dashboard/usuarios` mostrando nome, email, tipo, CPF
+- Indicação do usuário logado ("Você")
+- Criação via `/dashboard/usuarios/novo` com validações (senha ≥ 6, email único, CPF único, tipo válido)
+- Edição via `/dashboard/usuarios/[id]/editar` (atualização seletiva de campos)
+
+### 4. API de Usuários
+- `GET /api/usuarios` (ADMIN) lista usuários
+- `POST /api/usuarios` (ADMIN) cria usuários com hash bcrypt
+- `GET /api/usuarios/[id]` obtém dados por ID
+- `PUT /api/usuarios/[id]` atualiza dados (tratamento de erros Prisma p/ duplicidade / não encontrado)
+
+### 5. Header
+- Avatar dinâmico com inicial ou fallback "?"
+- Menu dropdown com nome, email e logout
+
+### 6. Sidebar
+- Itens filtrados por role
+- Link "Usuários" visível apenas para ADMIN
+
+### 7. Controle de Acesso Consolidado
+```
+/dashboard/*            → Requer autenticação
+/dashboard/usuarios/*   → Requer role ADMIN
+/api/usuarios/*         → Requer role ADMIN
+/api/alunos/*           → Requer roles: ADMIN | COORDENADOR | PROFESSOR | PEDAGOGO
+```
+
+### 8. UX / Acessibilidade
+- Tratamento para usuário sem nome
+- Feedback visual de carregamento/erros
+- Estrutura responsiva
+- Labels e textos auxiliares para screen readers
+
+### 9. Segurança
+- Senhas com hash bcrypt
+- Segredo NextAuth exigido em produção (fallback gerado em dev para evitar crash)
+- Middleware valida sessão antes de liberar dashboard/APIs sensíveis
+
+### 10. Próximos Passos Sugeridos
+- Paginação em listagens (usuários, alunos)
+- Soft delete / desativação formal de usuários
+- Testes automatizados (unitários e integração)
+- Route Groups para separar área pública futura (`(public)` vs `(admin)`)
+- Logs estruturados e auditoria mais completa (quem atualizou, IP, etc.)
+
+### Status
+Projeto organizado e operacional com fluxo de autenticação e gestão inicial de usuários e alunos.

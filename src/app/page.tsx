@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
 export default function Home() {
-  // Redireciona a raiz diretamente para o dashboard do PAA
-  redirect('/dashboard');
+  // Redireciona a raiz para a tela de login
+  redirect('/login');
 }
