@@ -6,10 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "format": "biome format",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "type-check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format",
+    "test": "echo \"No tests configured\" && exit 0",
+    "ci": "npm run lint && npm run type-check && npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
