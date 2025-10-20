@@ -19,12 +19,11 @@ help:
 	@echo "  db-push  - Sincroniza o schema Prisma com o banco de dados"
 	@echo "  db-gen   - Gera o cliente Prisma"
 
-setup: install prisma-generate
-	@echo "✅ Projeto configurado com sucesso!"
-
-install:
+setup:
 	@echo "📦 Instalando dependências..."
 	@$(NPM) install
+	@$(NPM) run prisma:generate
+	@echo "✅ Projeto configurado com sucesso!"
 
 dev: prisma-generate
 	@echo "🚀 Iniciando servidor Next.js..."
@@ -50,16 +49,6 @@ format:
 clean:
 	@echo "🧹 Limpando arquivos de build e dependências..."
 	@rm -rf .next node_modules .prisma prisma/generated package-lock.json
-
-db-push:
-	@echo "🔄 Sincronizando schema com o banco de dados..."
-	@$(NPM) run prisma:push
-
-prisma-generate:
-	@echo "🔧 Gerando cliente Prisma..."
-	@$(NPM) run prisma:generate
-	@$(NPM) exec prisma generate
-	@echo "✅ Cliente Prisma gerado com sucesso!"
 
 prisma-studio:
 	@echo "🛠️ Iniciando Prisma Studio..."

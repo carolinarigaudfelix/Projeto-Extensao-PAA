@@ -1,15 +1,20 @@
 # Projeto de Extensão PAA
 
-Sistema de gestão para o Programa de Apoio Acadêmico (PAA) da universidade.
+Sistema de gestão para o Programa de Apoio Acadêmico (PAA) da UERJ.
 
 ## 🛠 Tecnologias
 
 - **Next.js 15** - Framework Full-stack com App Router e API Routes
 - **NextAuth.js** - Autenticação e gerenciamento de sessão
 - **Prisma** - ORM moderno para MongoDB
-- **TailwindCSS** - Framework CSS utilitário
+- **Material-UI (MUI)** - Biblioteca de componentes React
 - **TypeScript** - Linguagem com tipagem estática
 - **MongoDB Atlas** - Banco de dados NoSQL na nuvem
+- **React Hook Form** - Gerenciamento de formulários
+- **Zod** - Validação de schemas e dados
+- **Zustand** - Gerenciamento de estado
+- **Biome** - Linter e formatador de código
+- **bcrypt** - Hash de senhas
 
 ## Estrutura do Projeto
 
@@ -17,14 +22,18 @@ Sistema de gestão para o Programa de Apoio Acadêmico (PAA) da universidade.
 src/
   ├── app/                    # Rotas e páginas Next.js
   │   ├── dashboard/         # Área administrativa
-  │   │   ├── _components/   # Componentes do dashboard
-  │   │   ├── alunos/       # Gestão de alunos
-  │   │   └── avaliacoes/   # Sistema de avaliações
+  │   │   └── _components/   # Componentes do dashboard
+  │   ├── auth/             # Autenticação
+  │   │   └── login/        # Página de login
   │   └── api/              # Rotas da API
+  │       ├── alunos/       # Endpoints de alunos
+  │       └── auth/         # Endpoints de autenticação
   ├── lib/                   # Utilitários e configurações
   │   ├── prisma.ts         # Cliente Prisma
-  │   └── auth.ts           # Configuração de autenticação
+  │   └── route-guard.ts    # Proteção de rotas
   └── types/                # Definições de tipos TypeScript
+      ├── auth.ts           # Tipos de autenticação
+      └── next-auth.d.ts    # Extensões NextAuth
 ```
 
 ## Funcionalidades
@@ -33,7 +42,7 @@ src/
 - Login seguro via NextAuth.js
 - Proteção de rotas
 - Gerenciamento de sessão
-- Múltiplos perfis (admin, professor, aluno)
+- Múltiplos perfis (Admin, Coordenador, Professor, Pedagogo)
 
 ### Dashboard
 - Visão geral com estatísticas
@@ -41,10 +50,11 @@ src/
 - Interface responsiva
 - Sidebar com informações do usuário
 
-### Gestão de Alunos
-- Listagem de alunos
+### Gestão de Estudantes
+- Listagem de estudantes
 - Cadastro e edição
 - Visualização de detalhes
+- Suporte a necessidades especiais
 - Filtros e busca
 
 ### Sistema de Avaliações
@@ -52,7 +62,30 @@ src/
 - Acompanhamento de desempenho
 - Histórico de avaliações
 
-## 📋 Instalação
+## � Modelos do Banco de Dados
+
+### Estudante
+- Informações pessoais (nome, idade, matrícula, email, telefone)
+- Informações acadêmicas (ano escolar, turma, curso)
+- Suporte a necessidades especiais
+- Campos de auditoria (criado, atualizado, ativo)
+
+### MembroPedagogico
+- Informações pessoais e profissionais
+- Vinculação com usuário do sistema
+- Responsável por avaliações
+
+### Usuario
+- Credenciais de acesso (email, CPF, senha)
+- Tipos: ADMIN, COORDENADOR, PROFESSOR, PEDAGOGO
+- Campos de auditoria
+
+### Avaliacao
+- Descrição e data da avaliação
+- Relacionamento com estudante e avaliador
+- Histórico completo de acompanhamento
+
+## �📋 Instalação
 
 ### Pré-requisitos
 
@@ -63,34 +96,36 @@ Antes de começar, você precisa ter instalado:
 
 ### Configuração
 
-1. Clone o repositório:
+1. Instale as dependências:
 ```bash
-git clone https://github.com/carolinarigaudfelix/Projeto-Extensao-PAA.git
-cd Projeto-Extensao-PAA
+make setup
 ```
 
-2. Instale as dependências:
-```bash
-npm install
+2. Configure as variáveis de ambiente:
+
+Crie um arquivo `.env` ou `.env.local` na raiz do projeto:
+
+```env
+# Banco de dados
+DATABASE_URL="mongodb+srv://SEU_USUARIO:SUA_SENHA@SEU_CLUSTER.xxxxx.mongodb.net/pedagogia_db?retryWrites=true&w=majority"
+
+# NextAuth
+NEXTAUTH_SECRET="sua-chave-secreta"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-3. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env.local
-```
-
-4. Configure o banco de dados:
+3. Configure o banco de dados:
 ```bash
 # Sincroniza o schema com o banco
-npx prisma db push
+make db-push
 
 # Gera o Prisma Client
-npx prisma generate
+make db-gen
 ```
 
-5. Inicie o servidor Next.js:
+4. Inicie o servidor Next.js:
 ```bash
-npm run dev
+make dev
 ```
 
 O aplicativo estará disponível em `http://localhost:3000`
@@ -105,7 +140,7 @@ As rotas da API estarão disponíveis em `http://localhost:3000/api`
 
 2. **Prisma Client não encontrado:**
    ```bash
-   npx prisma generate
+   make db-gen
    ```
 
 3. **Porta já em uso:**
@@ -113,34 +148,40 @@ As rotas da API estarão disponíveis em `http://localhost:3000/api`
 
 ## 📦 Scripts Disponíveis
 
-- `npm run dev` - Inicia o servidor de desenvolvimento
-- `npm run build` - Cria a versão de produção
-- `npm run start` - Inicia o servidor de produção
-- `npm run lint` - Executa o linter
-- `npx prisma generate` - Gera o cliente Prisma
-- `npx prisma db push` - Sincroniza o schema com o banco
+- `make dev` - Inicia o servidor de desenvolvimento
+- `make build` - Cria a versão de produção
+- `make start` - Inicia o servidor de produção
+- `make lint` - Executa o linter
+- `make format` - Formata o código usando Biome
+- `make db-gen` - Gera o cliente Prisma
+- `make db-push` - Sincroniza o schema com o banco
+- `make prisma-studio` - Abre o Prisma Studio (interface visual do banco)
+- `make clean` - Remove arquivos de build e dependências
 
 ## 📡 API Endpoints
 
 ### 🔒 Autenticação
 
-A API utiliza autenticação via JWT (JSON Web Token). Para endpoints protegidos, inclua o token no header:
+A API utiliza autenticação via NextAuth.js com JWT (JSON Web Token). Para endpoints protegidos, inclua o token de sessão.
 
-```
-Authorization: Bearer <seu_token_jwt>
-```
+### Estudantes
 
-### Alunos
-
-#### Criar novo aluno
+#### Criar novo estudante
 `POST /api/alunos`
 
 **Request:**
 ```json
 {
-  "nome": "Nome do Aluno",
+  "nome": "João Silva",
+  "idade": 18,
   "matricula": "12345678",
-  "curso": "Nome do Curso"
+  "email": "joao.silva@example.com",
+  "telefone": "21999999999",
+  "yearSchooling": 12,
+  "turma": "3A",
+  "curso": "Ensino Médio",
+  "isSpecialNeeds": false,
+  "specialNeedsDetails": null
 }
 ```
 
@@ -148,14 +189,23 @@ Authorization: Bearer <seu_token_jwt>
 ```json
 {
   "id": "653068f0f0322312b918342a",
-  "nome": "Nome do Aluno",
+  "nome": "João Silva",
+  "idade": 18,
   "matricula": "12345678",
-  "curso": "Nome do Curso",
-  "dataCadastro": "2025-10-18T20:30:10.000Z"
+  "email": "joao.silva@example.com",
+  "telefone": "21999999999",
+  "yearSchooling": 12,
+  "turma": "3A",
+  "curso": "Ensino Médio",
+  "isSpecialNeeds": false,
+  "specialNeedsDetails": null,
+  "criado": "2025-10-20T15:30:10.000Z",
+  "atualizado": "2025-10-20T15:30:10.000Z",
+  "isActive": true
 }
 ```
 
-#### Listar todos os alunos
+#### Listar todos os estudantes
 `GET /api/alunos`
 
 **Resposta (200):**
@@ -163,26 +213,105 @@ Authorization: Bearer <seu_token_jwt>
 [
   {
     "id": "653068f0f0322312b918342a",
-    "nome": "Nome do Aluno",
+    "nome": "João Silva",
+    "idade": 18,
     "matricula": "12345678",
-    "curso": "Nome do Curso",
-    "dataCadastro": "2025-10-18T20:30:10.000Z"
+    "email": "joao.silva@example.com",
+    "telefone": "21999999999",
+    "yearSchooling": 12,
+    "turma": "3A",
+    "curso": "Ensino Médio",
+    "isSpecialNeeds": false,
+    "specialNeedsDetails": null,
+    "criado": "2025-10-20T15:30:10.000Z",
+    "atualizado": "2025-10-20T15:30:10.000Z",
+    "isActive": true
   }
 ]
 ```
 
+#### Buscar estudante por ID
+`GET /api/alunos/{id}`
+
+**Resposta (200):**
+```json
+{
+  "id": "653068f0f0322312b918342a",
+  "nome": "João Silva",
+  "idade": 18,
+  "matricula": "12345678",
+  "email": "joao.silva@example.com",
+  "telefone": "21999999999",
+  "yearSchooling": 12,
+  "turma": "3A",
+  "curso": "Ensino Médio",
+  "isSpecialNeeds": false,
+  "specialNeedsDetails": null,
+  "criado": "2025-10-20T15:30:10.000Z",
+  "atualizado": "2025-10-20T15:30:10.000Z",
+  "isActive": true
+}
+```
+
+#### Atualizar estudante
+`PUT /api/alunos/{id}`
+
+**Request:**
+```json
+{
+  "nome": "João Silva Santos",
+  "telefone": "21988888888",
+  "turma": "3B"
+}
+```
+
+**Resposta (200):**
+```json
+{
+  "id": "653068f0f0322312b918342a",
+  "nome": "João Silva Santos",
+  "idade": 18,
+  "matricula": "12345678",
+  "email": "joao.silva@example.com",
+  "telefone": "21988888888",
+  "yearSchooling": 12,
+  "turma": "3B",
+  "curso": "Ensino Médio",
+  "isSpecialNeeds": false,
+  "specialNeedsDetails": null,
+  "criado": "2025-10-20T15:30:10.000Z",
+  "atualizado": "2025-10-20T16:45:20.000Z",
+  "isActive": true
+}
+```
+
+#### Deletar estudante (soft delete)
+`DELETE /api/alunos/{id}`
+
+**Resposta (200):**
+```json
+{
+  "message": "Estudante desativado com sucesso"
+}
+```
+
 ## Variáveis de Ambiente
 
+Crie um arquivo `.env` ou `.env.local` na raiz do projeto:
+
 ```env
-# Banco de dados
+# Banco de dados MongoDB
 DATABASE_URL="mongodb+srv://SEU_USUARIO:SUA_SENHA@SEU_CLUSTER.xxxxx.mongodb.net/pedagogia_db?retryWrites=true&w=majority"
 
-# NextAuth
-NEXTAUTH_SECRET="sua-chave-secreta"
+# NextAuth.js
+NEXTAUTH_SECRET="sua-chave-secreta-aleatoria-muito-segura"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-> ⚠️ **Importante**: Certifique-se de que `.env` está no `.gitignore` para não vazar credenciais!
+> ⚠️ **Importante**:
+> - Certifique-se de que `.env` e `.env.local` estão no `.gitignore` para não vazar credenciais!
+> - Gere uma chave secreta forte para `NEXTAUTH_SECRET`
+> - Configure seu IP no whitelist do MongoDB Atlas
 
 ## Contribuindo
 
@@ -190,7 +319,3 @@ NEXTAUTH_URL="http://localhost:3000"
 2. Faça commit das mudanças: `git commit -m 'feat: Adiciona nova funcionalidade'`
 3. Envie para a branch: `git push origin feature/nome-da-feature`
 4. Abra um Pull Request
-
-## Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
