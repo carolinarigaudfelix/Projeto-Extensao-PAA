@@ -1,57 +1,88 @@
 'use client';
 
 import { useRoleGuard } from '@/lib/route-guard';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  CircularProgress,
+  Container,
+  FormControlLabel,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 
 const schema = z.object({
-  nome: z.string().min(2),
-  idade: z.coerce.number().int().min(1),
-  matricula: z.string().min(3),
-  email: z.string().email().optional().or(z.literal('')),
+  nome: z.string().min(2, 'Nome muito curto'),
+  idade: z.coerce.number().int().min(1, 'Idade inválida'),
+  matricula: z.string().min(3, 'Matrícula muito curta'),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefone: z.string().optional().or(z.literal('')),
-  yearSchooling: z.coerce.number().int().min(1),
+  yearSchooling: z.coerce.number().int().min(1, 'Ano escolar inválido'),
   turma: z.string().optional().or(z.literal('')),
   curso: z.string().optional().or(z.literal('')),
   isSpecialNeeds: z.boolean().default(false),
   specialNeedsDetails: z.string().optional().or(z.literal('')),
 });
 
+type FormValues = z.infer<typeof schema>;
+
 export default function NovoAlunoPage() {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const nomeId = useId();
-  const idadeId = useId();
-  const matriculaId = useId();
-  const emailId = useId();
-  const telefoneId = useId();
-  const yearSchoolingId = useId();
-  const turmaId = useId();
-  const cursoId = useId();
-  const isSpecialNeedsId = useId();
-  const specialNeedsDetailsId = useId();
   const { isLoading, isAuthenticated, hasRole } = useRoleGuard([
     'ADMIN',
     'COORDENADOR',
     'PROFESSOR',
     'PEDAGOGO',
   ]);
+  const router = useRouter();
+  const [form, setForm] = useState<FormValues>({
+    nome: '',
+    idade: 0,
+    matricula: '',
+    email: '',
+    telefone: '',
+    yearSchooling: 0,
+    turma: '',
+    curso: '',
+    isSpecialNeeds: false,
+    specialNeedsDetails: '',
+  });
+  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setError('');
-    setLoading(true);
-    try {
-      const raw = Object.fromEntries(formData.entries());
-      const parsed = schema.safeParse({
-        ...raw,
-        isSpecialNeeds: raw.isSpecialNeeds === 'on',
+    setFieldErrors({});
+    setSaving(true);
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) {
+      const errs: Record<string, string> = {};
+      parsed.error.issues.forEach((i) => {
+        if (i.path[0]) errs[i.path[0].toString()] = i.message;
       });
-      if (!parsed.success) {
-        setError('Dados inválidos');
-        return;
-      }
+      setFieldErrors(errs);
+      setSaving(false);
+      return;
+    }
+
+    try {
       const res = await fetch('/api/alunos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,193 +91,187 @@ export default function NovoAlunoPage() {
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         setError(j.message || 'Falha ao criar aluno');
+        setSaving(false);
         return;
       }
       router.push('/dashboard/alunos');
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro inesperado');
-    } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
-  if (isLoading) return <p className="text-sm text-gray-500">Carregando...</p>;
+  if (isLoading)
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Carregando...
+      </Typography>
+    );
   if (!isAuthenticated)
     return (
-      <p className="text-sm text-red-600">Você precisa estar autenticado.</p>
+      <Typography color="error">Você precisa estar autenticado.</Typography>
     );
-  if (!hasRole) return <p className="text-sm text-red-600">Acesso restrito.</p>;
+  if (!hasRole) return <Typography color="error">Acesso restrito.</Typography>;
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Novo Aluno</h1>
+    <Container maxWidth="md" sx={{ py: 2 }}>
+      <Typography variant="h5" fontWeight={600} gutterBottom>
+        Novo Aluno
+      </Typography>
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800">
-          {error}
-        </div>
+        <Card variant="outlined" sx={{ mb: 2, borderColor: 'error.light' }}>
+          <CardContent>
+            <Typography variant="subtitle2" color="error" gutterBottom>
+              Erro
+            </Typography>
+            <Typography variant="body2" color="error.main">
+              {error}
+            </Typography>
+          </CardContent>
+        </Card>
       )}
-      <form action={onSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor={nomeId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Nome
-            </label>
-            <input
-              id={nomeId}
+      <Box component="form" onSubmit={handleSubmit}>
+        <Box display="flex" flexWrap="wrap" gap={2}>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Nome"
               name="nome"
+              value={form.nome}
+              onChange={handleChange}
               required
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              fullWidth
+              error={Boolean(fieldErrors.nome)}
+              helperText={fieldErrors.nome}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={idadeId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Idade
-            </label>
-            <input
-              id={idadeId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Idade"
               name="idade"
               type="number"
+              value={form.idade}
+              onChange={handleChange}
               required
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              fullWidth
+              error={Boolean(fieldErrors.idade)}
+              helperText={fieldErrors.idade}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={matriculaId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Matrícula
-            </label>
-            <input
-              id={matriculaId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Matrícula"
               name="matricula"
+              value={form.matricula}
+              onChange={handleChange}
               required
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              fullWidth
+              error={Boolean(fieldErrors.matricula)}
+              helperText={fieldErrors.matricula}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={emailId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              id={emailId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Email"
               name="email"
               type="email"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              value={form.email}
+              onChange={handleChange}
+              fullWidth
+              error={Boolean(fieldErrors.email)}
+              helperText={fieldErrors.email}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={telefoneId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Telefone
-            </label>
-            <input
-              id={telefoneId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Telefone"
               name="telefone"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              value={form.telefone}
+              onChange={handleChange}
+              fullWidth
+              error={Boolean(fieldErrors.telefone)}
+              helperText={fieldErrors.telefone}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={yearSchoolingId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Ano Escolar
-            </label>
-            <input
-              id={yearSchoolingId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Ano Escolar"
               name="yearSchooling"
               type="number"
+              value={form.yearSchooling}
+              onChange={handleChange}
               required
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              fullWidth
+              error={Boolean(fieldErrors.yearSchooling)}
+              helperText={fieldErrors.yearSchooling}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={turmaId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Turma
-            </label>
-            <input
-              id={turmaId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Turma"
               name="turma"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              value={form.turma}
+              onChange={handleChange}
+              fullWidth
+              error={Boolean(fieldErrors.turma)}
+              helperText={fieldErrors.turma}
             />
-          </div>
-          <div>
-            <label
-              htmlFor={cursoId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Curso
-            </label>
-            <input
-              id={cursoId}
+          </Box>
+          <Box flex="1 1 300px" maxWidth={500}>
+            <TextField
+              label="Curso"
               name="curso"
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              value={form.curso}
+              onChange={handleChange}
+              fullWidth
+              error={Boolean(fieldErrors.curso)}
+              helperText={fieldErrors.curso}
             />
-          </div>
-        </div>
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium text-gray-700">
-            Necessidades especiais
-          </legend>
-          <div className="flex items-center gap-2">
-            <input
-              id={isSpecialNeedsId}
-              name="isSpecialNeeds"
-              type="checkbox"
-              className="rounded border-gray-300"
+          </Box>
+          <Box flex="1 1 100%">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="isSpecialNeeds"
+                  checked={form.isSpecialNeeds}
+                  onChange={handleChange}
+                />
+              }
+              label="Possui necessidades especiais"
             />
-            <label htmlFor={isSpecialNeedsId} className="text-sm text-gray-700">
-              Possui necessidades especiais
-            </label>
-          </div>
-          <div>
-            <label
-              htmlFor={specialNeedsDetailsId}
-              className="block text-sm font-medium text-gray-700"
-            >
-              Detalhes
-            </label>
-            <textarea
-              id={specialNeedsDetailsId}
+          </Box>
+          <Box flex="1 1 100%">
+            <TextField
+              label="Detalhes"
               name="specialNeedsDetails"
-              rows={3}
-              className="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+              value={form.specialNeedsDetails}
+              onChange={handleChange}
+              multiline
+              minRows={3}
+              fullWidth
+              disabled={!form.isSpecialNeeds}
             />
-          </div>
-        </fieldset>
-        <div className="flex gap-4">
-          <button
+          </Box>
+        </Box>
+        <Box display="flex" gap={2} mt={3}>
+          <Button
             type="submit"
-            disabled={loading}
-            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+            variant="contained"
+            color="success"
+            disabled={saving}
+            startIcon={saving ? <CircularProgress size={18} /> : undefined}
           >
-            {loading ? 'Salvando...' : 'Salvar'}
-          </button>
-          <button
-            type="button"
+            {saving ? 'Salvando...' : 'Salvar'}
+          </Button>
+          <Button
+            variant="outlined"
+            color="inherit"
             onClick={() => router.back()}
-            className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancelar
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Container>
   );
 }

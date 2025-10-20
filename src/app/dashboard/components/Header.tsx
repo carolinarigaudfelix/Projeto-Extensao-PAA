@@ -1,90 +1,125 @@
 'use client';
 
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import MenuIcon from '@mui/icons-material/Menu';
+import {
+  alpha,
+  AppBar,
+  Avatar,
+  Box,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Tooltip,
+  Typography,
+  useScrollTrigger,
+} from '@mui/material';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+export function Header({ onToggleSidebar }: HeaderProps) {
   const { data: session } = useSession();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const trigger = useScrollTrigger({ disableHysteresis: true, threshold: 0 });
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  };
+  const handleMenuClose = () => setAnchorEl(null);
+
+  const initials = session?.user?.nome?.trim()
+    ? session.user.nome
+        .split(' ')
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase())
+        .join('')
+    : '?';
 
   return (
-    <header className="bg-white shadow">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 justify-between">
-          <div className="flex">
-            <div className="flex flex-shrink-0 items-center">
-              {/* Mobile menu button */}
-              <button
-                type="button"
-                className="lg:hidden -ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                <span className="sr-only">Abrir menu</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                  role="img"
-                  aria-label="Menu Principal"
-                >
-                  <title>Menu Principal</title>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* User info and menu */}
-            <div className="relative">
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              >
-                <span className="sr-only">Abrir menu do usuário</span>
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {session?.user?.nome ? session.user.nome.charAt(0).toUpperCase() : '?'}
-                    </span>
-                  </div>
-                  <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {session?.user?.nome || 'Usuário sem nome'}
-                  </span>
-                </div>
-              </button>
-
-              {/* Dropdown menu */}
-              {isUserMenuOpen && (
-                <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="px-4 py-2 border-b">
-                    <p className="text-sm font-medium text-gray-900">
-                      {session?.user?.nome || 'Usuário'}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {session?.user?.email}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+    <AppBar
+      position="sticky"
+      elevation={trigger ? 4 : 0}
+      sx={(theme) => ({
+        bgcolor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+        transition: 'box-shadow 0.2s',
+      })}
+    >
+      <Toolbar
+        sx={{ minHeight: 64, display: 'flex', justifyContent: 'space-between' }}
+      >
+        <Box display="flex" alignItems="center" gap={1}>
+          {onToggleSidebar && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={onToggleSidebar}
+              sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" fontWeight={600} noWrap>
+            PAA Dashboard
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" gap={2}>
+          {session?.user && (
+            <>
+              <Tooltip title={session.user.nome || 'Usuário sem nome'}>
+                <IconButton onClick={handleMenuOpen} size="small" sx={{ p: 0 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: 40,
+                      height: 40,
+                      fontSize: 16,
+                    }}
                   >
-                    Sair
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+                    {initials}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{ sx: { minWidth: 220 } }}
+              >
+                <Box px={2} py={1.5}>
+                  <Typography variant="subtitle2" fontWeight={600} noWrap>
+                    {session.user.nome || 'Usuário'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {session.user.email}
+                  </Typography>
+                </Box>
+                <Divider />
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    signOut({ callbackUrl: '/login' });
+                  }}
+                  sx={{ gap: 1 }}
+                >
+                  <LogoutOutlinedIcon fontSize="small" />
+                  <Typography variant="body2">Sair</Typography>
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }

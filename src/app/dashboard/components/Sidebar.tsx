@@ -1,68 +1,164 @@
 'use client';
 
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import {
+  Avatar,
+  Box,
+  Divider,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Tooltip,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { signOut, useSession } from 'next-auth/react';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
-  { name: 'Alunos', href: '/dashboard/alunos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
-  { name: 'Avaliações', href: '/dashboard/avaliacoes', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] },
-  { name: 'Usuários', href: '/dashboard/usuarios', roles: ['ADMIN'] },
+interface NavItem {
+  name: string;
+  href: string;
+  roles: string[];
+  icon: React.ReactNode;
+}
+
+const navigation: NavItem[] = [
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'],
+    icon: <DashboardOutlinedIcon fontSize="small" />,
+  },
+  {
+    name: 'Alunos',
+    href: '/dashboard/alunos',
+    roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'],
+    icon: <SchoolOutlinedIcon fontSize="small" />,
+  },
+  {
+    name: 'Avaliações',
+    href: '/dashboard/avaliacoes',
+    roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'],
+    icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />,
+  },
+  {
+    name: 'Usuários',
+    href: '/dashboard/usuarios',
+    roles: ['ADMIN'],
+    icon: <GroupOutlinedIcon fontSize="small" />,
+  },
 ];
 
 export function Sidebar() {
-  const pathname = usePathname();
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const theme = useTheme();
 
   if (!session?.user) return null;
 
-  return (
-    <div className="flex h-screen flex-col bg-gray-800 w-64">
-      <div className="flex h-16 items-center justify-center border-b border-gray-700">
-        <h1 className="text-xl font-semibold text-white">PAA Dashboard</h1>
-      </div>
+  const initials = session.user.nome?.trim()
+    ? session.user.nome
+        .split(' ')
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase())
+        .join('')
+    : '?';
 
-      <div className="flex-1 overflow-y-auto">
-        <nav className="px-2 py-4">
+  return (
+    <Drawer
+      variant="permanent"
+      PaperProps={{
+        sx: {
+          width: 240,
+          bgcolor: theme.palette.grey[900],
+          color: theme.palette.grey[100],
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
+    >
+      <Box sx={{ px: 2, py: 2 }}>
+        <Typography variant="h6" fontWeight={600}>
+          PAA Dashboard
+        </Typography>
+      </Box>
+      <Divider sx={{ borderColor: theme.palette.grey[800] }} />
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        <List dense disablePadding>
           {navigation
             .filter((item) => item.roles.includes(session.user.tipo))
             .map((item) => {
-              const isActive = pathname === item.href;
+              const active = pathname === item.href;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`mb-1 flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
-                    isActive
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
-                >
-                  {item.name}
-                </Link>
+                <ListItem key={item.href} disablePadding>
+                  <ListItemButton
+                    component={NextLink}
+                    href={item.href}
+                    selected={active}
+                    sx={{
+                      py: 1,
+                      '&.Mui-selected': {
+                        bgcolor: theme.palette.grey[800],
+                        '&:hover': { bgcolor: theme.palette.grey[700] },
+                      },
+                      '&:hover': { bgcolor: theme.palette.grey[800] },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.name}
+                      primaryTypographyProps={{
+                        fontSize: 14,
+                        fontWeight: active ? 600 : 500,
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
               );
             })}
-        </nav>
-      </div>
-
-      <div className="border-t border-gray-700 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-white">
-              {session.user.nome}
-            </p>
-            <p className="text-xs text-gray-400">{session.user.tipo}</p>
-          </div>
-          <button
-            type="button"
+        </List>
+      </Box>
+      <Divider sx={{ borderColor: theme.palette.grey[800] }} />
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Avatar
+          sx={{
+            bgcolor: theme.palette.success.dark,
+            width: 40,
+            height: 40,
+            fontSize: 16,
+          }}
+        >
+          {initials}
+        </Avatar>
+        <Box flex={1} minWidth={0}>
+          <Typography variant="body2" fontWeight={600} noWrap>
+            {session.user.nome || 'Usuário sem nome'}
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.7 }} noWrap>
+            {session.user.tipo}
+          </Typography>
+        </Box>
+        <Tooltip title="Sair">
+          <IconButton
+            size="small"
             onClick={() => signOut()}
-            className="text-sm text-gray-400 hover:text-white"
+            sx={{ color: 'inherit' }}
           >
-            Sair
-          </button>
-        </div>
-      </div>
-    </div>
+            <LogoutOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    </Drawer>
   );
 }

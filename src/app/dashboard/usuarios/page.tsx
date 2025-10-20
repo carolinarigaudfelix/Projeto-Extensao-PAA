@@ -1,8 +1,25 @@
 'use client';
 
 import { useRoleGuard } from '@/lib/route-guard';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Paper,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Usuario = {
   id: string;
@@ -18,155 +35,147 @@ export default function UsuariosDashboardPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUsuarios = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const response = await fetch('/api/usuarios');
+      if (!response.ok) {
+        throw new Error('Erro ao carregar usuários');
+      }
+      const data = await response.json();
+      setUsuarios(data);
+      setError('');
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Erro ao carregar usuários',
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!hasRole) return;
-    async function fetchUsuarios() {
-      try {
-        const response = await fetch('/api/usuarios');
-        if (!response.ok) {
-          throw new Error('Erro ao carregar usuários');
-        }
-        const data = await response.json();
-        setUsuarios(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Erro ao carregar usuários',
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUsuarios();
-  }, [hasRole]);
+    if (hasRole) fetchUsuarios();
+  }, [hasRole, fetchUsuarios]);
 
-  if (isLoading) return <p className="text-sm text-gray-500">Carregando...</p>;
+  if (isLoading)
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Carregando...
+      </Typography>
+    );
   if (!isAuthenticated)
-    return (
-      <p className="text-sm text-red-600">Você precisa estar autenticado.</p>
-    );
+    return <Alert severity="error">Você precisa estar autenticado.</Alert>;
   if (!hasRole)
-    return (
-      <p className="text-sm text-red-600">Acesso restrito a administradores.</p>
-    );
+    return <Alert severity="error">Acesso restrito a administradores.</Alert>;
 
   return (
-    <div>
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Usuários</h1>
-          <p className="mt-2 text-sm text-gray-700">
+    <Box>
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={2}
+        gap={2}
+      >
+        <Box>
+          <Typography variant="h4" fontWeight={600}>
+            Usuários
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
             Gerencie os usuários do sistema
-          </p>
-        </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
-          <Link
+          </Typography>
+        </Box>
+        <Box display="flex" gap={2}>
+          <Button
+            component={Link}
             href="/dashboard/usuarios/novo"
-            className="rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            variant="contained"
+            color="primary"
           >
             Novo usuário
-          </Link>
-        </div>
-      </div>
+          </Button>
+          <IconButton
+            aria-label="Recarregar"
+            onClick={fetchUsuarios}
+            disabled={refreshing}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      </Box>
 
       {error && (
-        <div className="mt-4 rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-800">{error}</p>
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
       )}
 
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+      <TableContainer component={Paper} elevation={1}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Nome</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Tipo</TableCell>
+              <TableCell>CPF</TableCell>
+              <TableCell align="right">Ações</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              ['a', 'b', 'c'].map((id) => (
+                <TableRow key={`skeleton-${id}`}>
+                  <TableCell colSpan={5}>
+                    <Skeleton height={32} />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : usuarios.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="center"
+                  >
+                    Nenhum usuário encontrado
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              usuarios.map((usuario) => (
+                <TableRow key={usuario.id} hover>
+                  <TableCell>{usuario.nome || 'Sem nome'}</TableCell>
+                  <TableCell>{usuario.email}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={usuario.tipo}
+                      size="small"
+                      color={usuario.tipo === 'ADMIN' ? 'primary' : 'success'}
+                      variant={usuario.tipo === 'ADMIN' ? 'filled' : 'outlined'}
+                    />
+                  </TableCell>
+                  <TableCell>{usuario.cpf || '-'}</TableCell>
+                  <TableCell align="right">
+                    <Button
+                      component={Link}
+                      href={`/dashboard/usuarios/${usuario.id}/editar`}
+                      size="small"
                     >
-                      Nome
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Email
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Tipo
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      CPF
-                    </th>
-                    <th
-                      scope="col"
-                      className="relative py-3.5 pl-3 pr-4 sm:pr-6"
-                    >
-                      <span className="sr-only">Ações</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {loading ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="py-4 text-center text-sm text-gray-500"
-                      >
-                        Carregando...
-                      </td>
-                    </tr>
-                  ) : usuarios.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="py-4 text-center text-sm text-gray-500"
-                      >
-                        Nenhum usuário encontrado
-                      </td>
-                    </tr>
-                  ) : (
-                    usuarios.map((usuario) => (
-                      <tr key={usuario.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {usuario.nome || 'Sem nome'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {usuario.email}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                            {usuario.tipo}
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {usuario.cpf || '-'}
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <Link
-                            href={`/dashboard/usuarios/${usuario.id}/editar`}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Editar
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                      Editar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
