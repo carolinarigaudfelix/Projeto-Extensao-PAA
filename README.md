@@ -467,10 +467,6 @@ NEXTAUTH_URL="http://localhost:3000"
 3. Envie para a branch: `git push origin feature/nome-da-feature`
 4. Abra um Pull Request
 
-## 📜 Changelog / Alterações Recentes
-
-Esta seção consolida as principais modificações aplicadas recentemente ao projeto (originadas de `ALTERACOES.md`).
-
 ### 1. Fluxo de Autenticação
 - Página inicial (`/`) agora redireciona para `/login` (fluxo explícito de entrada)
 - Middleware protege rotas do dashboard exigindo sessão válida
