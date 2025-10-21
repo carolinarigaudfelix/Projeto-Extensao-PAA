@@ -1,8 +1,9 @@
-import prisma from '@/lib/prisma';
 import { hash } from 'bcrypt';
+import { type NextRequest, NextResponse } from 'next/server';
 import type { JWT } from 'next-auth/jwt';
 import { getToken } from 'next-auth/jwt';
-import { type NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
 type TokenLike = JWT & { tipo?: string };
 
@@ -69,16 +70,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verificar se email já existe
+    // Sanitiza e valida CPF
+    const cpfL = limparCPF(String(cpf));
+    if (!validarCPF(cpfL)) {
+      return NextResponse.json({ error: 'CPF inválido' }, { status: 400 });
+    }
+
+    // Verificar se email/CPF já existem
     const usuarioExistente = await prisma.usuario.findFirst({
       where: {
-        OR: [{ email }, { cpf }],
+        OR: [{ email }, { cpf: cpfL }],
       },
     });
 
     if (usuarioExistente) {
       return NextResponse.json(
-        { error: 'Email já cadastrado' },
+        { error: 'Email ou CPF já cadastrado' },
         { status: 409 },
       );
     }
@@ -93,7 +100,7 @@ export async function POST(req: NextRequest) {
         email,
         senhaHash,
         tipo,
-        cpf,
+        cpf: cpfL,
         criadoPor: 'sistema',
         atualizadoPor: 'sistema',
       },

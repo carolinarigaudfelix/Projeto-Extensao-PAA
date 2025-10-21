@@ -1,6 +1,5 @@
 'use client';
 
-import { useRoleGuard } from '@/lib/route-guard';
 import {
   Alert,
   Box,
@@ -13,6 +12,9 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { CPFInput } from '@/components/CPFInput';
+import { useRoleGuard } from '@/lib/route-guard';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
 const tiposValidos = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] as const;
 
@@ -37,6 +39,7 @@ export default function NovoUsuarioPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [cpfValido, setCpfValido] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,10 +52,17 @@ export default function NovoUsuarioPage() {
     setSaving(true);
 
     try {
+      // Sanitiza e valida CPF antes de enviar
+      const cpfL = limparCPF(form.cpf);
+      if (!validarCPF(cpfL)) {
+        setError('CPF inválido');
+        return;
+      }
+
       const res = await fetch('/api/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, cpf: cpfL }),
       });
 
       if (!res.ok) {
@@ -134,15 +144,15 @@ export default function NovoUsuarioPage() {
           inputProps={{ minLength: 6 }}
           helperText="Mínimo 6 caracteres"
         />
-        <TextField
+        <CPFInput
           name="cpf"
           label="CPF"
           value={form.cpf}
           onChange={handleChange}
+          onCPFChange={(_, v) => setCpfValido(v)}
           required
           fullWidth
-          inputProps={{ pattern: '[0-9]{11}', inputMode: 'numeric' }}
-          helperText="11 dígitos (apenas números)"
+          helperText="Digite o CPF (formato 000.000.000-00)"
         />
         <TextField
           name="tipo"
@@ -160,7 +170,11 @@ export default function NovoUsuarioPage() {
           ))}
         </TextField>
         <Box display="flex" gap={2} mt={1}>
-          <Button type="submit" variant="contained" disabled={saving}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={saving || !cpfValido}
+          >
             {saving ? (
               <CircularProgress size={20} color="inherit" />
             ) : (

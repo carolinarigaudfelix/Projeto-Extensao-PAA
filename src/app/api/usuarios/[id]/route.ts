@@ -1,7 +1,8 @@
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 import type { JWT } from 'next-auth/jwt';
 import { getToken } from 'next-auth/jwt';
-import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
 function denied(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
@@ -63,14 +64,17 @@ export async function PUT(req: Request) {
       )
     )
       return denied(400, 'Tipo inválido');
-    if (cpf && (typeof cpf !== 'string' || !/^\d{11}$/.test(cpf)))
-      return denied(400, 'CPF inválido');
+    if (cpf) {
+      if (typeof cpf !== 'string') return denied(400, 'CPF inválido');
+      const cpfL = limparCPF(cpf);
+      if (!validarCPF(cpfL)) return denied(400, 'CPF inválido');
+    }
 
     const updateData: Record<string, unknown> = {};
     if (nome) updateData.nome = nome;
     if (email) updateData.email = email;
     if (tipo) updateData.tipo = tipo;
-    if (cpf) updateData.cpf = cpf;
+    if (cpf) updateData.cpf = limparCPF(cpf as string);
 
     const usuarioAtualizado = await prisma.usuario.update({
       where: { id },
@@ -90,5 +94,36 @@ export async function PUT(req: Request) {
     if (e.code === 'P2025') return denied(404, 'Usuário não encontrado');
     if (e.code === 'P2002') return denied(409, 'Email ou CPF já cadastrado');
     return denied(500, 'Erro ao atualizar usuário');
+  }
+}
+
+export async function DELETE(req: Request) {
+  const guard = await adminGuard(req);
+  if (guard instanceof NextResponse) return guard;
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
+  if (!id) return denied(400, 'ID inválido');
+  try {
+    const token = guard as unknown as { id?: string };
+    const usuario = await prisma.usuario.update({
+      where: { id },
+      data: { isActive: false, atualizadoPor: token.id ?? 'system' },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        tipo: true,
+        isActive: true,
+        atualizado: true,
+      },
+    });
+    return NextResponse.json({
+      message: 'Usuário desativado com sucesso',
+      usuario,
+    });
+  } catch (err: unknown) {
+    const e = err as { code?: string };
+    if (e.code === 'P2025') return denied(404, 'Usuário não encontrado');
+    return denied(500, 'Erro ao desativar usuário');
   }
 }
