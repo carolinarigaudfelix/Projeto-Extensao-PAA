@@ -3,18 +3,18 @@
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import {
-    alpha,
-    AppBar,
-    Avatar,
-    Box,
-    Divider,
-    IconButton,
-    Menu,
-    MenuItem,
-    Toolbar,
-    Tooltip,
-    Typography,
-    useScrollTrigger,
+  AppBar,
+  Avatar,
+  alpha,
+  Box,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Tooltip,
+  Typography,
+  useScrollTrigger,
 } from '@mui/material';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';

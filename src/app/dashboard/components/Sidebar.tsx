@@ -21,9 +21,9 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { signOut, useSession } from 'next-auth/react';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 
 interface NavItem {
   name: string;

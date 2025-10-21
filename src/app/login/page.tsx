@@ -17,8 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { type FormEvent, useState } from 'react';
 
 export default function LoginPage() {

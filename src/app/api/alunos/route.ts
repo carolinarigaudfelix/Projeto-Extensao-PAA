@@ -1,7 +1,7 @@
+import { NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import prisma from '@/lib/prisma';
 import type { TokenPayload } from '@/types/auth';
-import { getToken } from 'next-auth/jwt';
-import { NextResponse } from 'next/server';
 
 const ALLOWED_ROLES = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'];
 

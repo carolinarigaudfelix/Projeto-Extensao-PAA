@@ -1,6 +1,6 @@
-import type { TokenPayload } from '@/types/auth';
-import { getToken } from 'next-auth/jwt';
 import { type NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import type { TokenPayload } from '@/types/auth';
 
 function resolveSecret(): string | undefined {
   const s = process.env.NEXTAUTH_SECRET;

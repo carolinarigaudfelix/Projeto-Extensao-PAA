@@ -1,10 +1,10 @@
-import prisma from '@/lib/prisma';
 import type { TipoUsuario } from '@prisma/client';
 import { compare } from 'bcrypt';
 import type { NextAuthConfig, Session, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
+import prisma from '@/lib/prisma';
 
 export const authConfig = {
   pages: {

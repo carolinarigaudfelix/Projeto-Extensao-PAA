@@ -1,6 +1,5 @@
 'use client';
 
-import { useRoleGuard } from '@/lib/route-guard';
 import {
   Box,
   Button,
@@ -16,6 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { z } from 'zod';
+import { useRoleGuard } from '@/lib/route-guard';
 
 const schema = z.object({
   nome: z.string().min(2, 'Nome muito curto'),
