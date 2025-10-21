@@ -1,7 +1,7 @@
+import { NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import prisma from '@/lib/prisma';
 import type { TokenPayload } from '@/types/auth';
-import { getToken } from 'next-auth/jwt';
-import { NextResponse } from 'next/server';
 
 async function ensureAuthorizedForAlunos(req: Request) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -14,6 +14,13 @@ async function ensureAuthorizedForAlunos(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const auth = await ensureAuthorizedForAlunos(req);
+    if (!auth.ok)
+      return NextResponse.json(
+        { message: auth.message },
+        { status: auth.code },
+      );
+
     const url = new URL(req.url);
     const parts = url.pathname.split('/').filter(Boolean);
     const id = parts[parts.length - 1];

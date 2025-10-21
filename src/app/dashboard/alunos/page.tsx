@@ -1,5 +1,7 @@
 'use client';
 
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
   Box,
@@ -7,6 +9,11 @@ import {
   Card,
   CardContent,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Skeleton,
@@ -41,6 +48,10 @@ export default function AlunosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const carregarAlunos = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -59,6 +70,36 @@ export default function AlunosPage() {
   useEffect(() => {
     carregarAlunos();
   }, [carregarAlunos]);
+
+  const handleAskDelete = (id: string) => {
+    setDeletingId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/alunos/${deletingId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Falha ao excluir aluno');
+      }
+      setConfirmOpen(false);
+      setDeletingId(null);
+      await carregarAlunos();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao excluir aluno');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    if (!deleting) setConfirmOpen(false);
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
@@ -165,12 +206,59 @@ export default function AlunosPage() {
                     >
                       Detalhes
                     </Button>
+                    <IconButton
+                      aria-label="Editar"
+                      color="primary"
+                      component={NextLink}
+                      href={`/dashboard/alunos/${a.id}/editar`}
+                      size="small"
+                      sx={{ ml: 1 }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      aria-label="Excluir"
+                      color="error"
+                      onClick={() => handleAskDelete(a.id)}
+                      size="small"
+                      sx={{ ml: 1 }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCloseDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja desativar este aluno? Você pode reativá-lo
+            editando o cadastro.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} disabled={deleting}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

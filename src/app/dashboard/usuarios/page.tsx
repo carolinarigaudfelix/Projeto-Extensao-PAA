@@ -1,12 +1,17 @@
 'use client';
 
-import { useRoleGuard } from '@/lib/route-guard';
+import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   Alert,
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Skeleton,
@@ -20,6 +25,7 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useRoleGuard } from '@/lib/route-guard';
 
 type Usuario = {
   id: string;
@@ -36,6 +42,10 @@ export default function UsuariosDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchUsuarios = useCallback(async () => {
     try {
@@ -60,6 +70,36 @@ export default function UsuariosDashboardPage() {
   useEffect(() => {
     if (hasRole) fetchUsuarios();
   }, [hasRole, fetchUsuarios]);
+
+  const handleAskDelete = (id: string) => {
+    setDeletingId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/usuarios/${deletingId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Falha ao excluir usuário');
+      }
+      setConfirmOpen(false);
+      setDeletingId(null);
+      await fetchUsuarios();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao excluir usuário');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    if (!deleting) setConfirmOpen(false);
+  };
 
   if (isLoading)
     return (
@@ -169,6 +209,15 @@ export default function UsuariosDashboardPage() {
                     >
                       Editar
                     </Button>
+                    <IconButton
+                      aria-label="Excluir"
+                      color="error"
+                      onClick={() => handleAskDelete(usuario.id)}
+                      size="small"
+                      sx={{ ml: 1 }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))
@@ -176,6 +225,34 @@ export default function UsuariosDashboardPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCloseDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja desativar este usuário? Você pode reativá-lo
+            editando o cadastro.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} disabled={deleting}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
