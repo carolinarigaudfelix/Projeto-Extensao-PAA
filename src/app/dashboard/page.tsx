@@ -80,40 +80,40 @@ export default function DashboardPage() {
                 <span>
                   <IconButton
                     onClick={carregarAlunos}
-                      disabled={loadingAlunos}
-                      size="small"
-                    >
-                      <RefreshOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              }
-            />
-            <Divider />
-            <CardContent>
-              {loadingAlunos ? (
-                <Skeleton variant="text" width={80} height={32} />
-              ) : erroAlunos ? (
-                <Typography variant="body2" color="error">
-                  {erroAlunos}
-                </Typography>
-              ) : (
-                <Typography variant="h4" fontWeight={700}>
-                  {totalAlunos}
-                </Typography>
-              )}
-              <Box mt={1}>
-                <Button
-                  href="/dashboard/alunos"
-                  variant="text"
-                  size="small"
-                  sx={{ textTransform: 'none' }}
-                >
-                  Ver todos
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+                    disabled={loadingAlunos}
+                    size="small"
+                  >
+                    <RefreshOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            }
+          />
+          <Divider />
+          <CardContent>
+            {loadingAlunos ? (
+              <Skeleton variant="text" width={80} height={32} />
+            ) : erroAlunos ? (
+              <Typography variant="body2" color="error">
+                {erroAlunos}
+              </Typography>
+            ) : (
+              <Typography variant="h4" fontWeight={700}>
+                {totalAlunos}
+              </Typography>
+            )}
+            <Box mt={1}>
+              <Button
+                href="/dashboard/alunos"
+                variant="text"
+                size="small"
+                sx={{ textTransform: 'none' }}
+              >
+                Ver todos
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
         {/* Outros cards podem ser adicionados aqui */}
       </Box>
     </Container>

@@ -1,8 +1,9 @@
-import prisma from '@/lib/prisma';
 import { compare } from 'bcrypt';
 import type { NextAuthConfig, User } from 'next-auth';
+import { CredentialsSignin } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
+import prisma from '@/lib/prisma';
 
 // Fallback seguro para ambiente de desenvolvimento caso NEXTAUTH_SECRET não esteja definido.
 // Em produção, a variável de ambiente DEVE estar presente.
@@ -38,12 +39,37 @@ export const authConfig: NextAuthConfig = {
       async authorize(credentials) {
         const email = credentials?.email?.toString();
         const senha = credentials?.senha?.toString();
-        if (!email) return null;
-        if (!senha) return null;
+
+        if (!(email && senha)) {
+          throw new CredentialsSignin('Email e senha são obrigatórios');
+        }
+
         const usuario = await prisma.usuario.findUnique({ where: { email } });
-        if (!usuario?.senhaHash) return null;
-        const ok = await compare(senha, usuario.senhaHash);
-        if (!ok) return null;
+
+        if (!usuario) {
+          // Mensagem explícita para o cliente
+          throw new CredentialsSignin(
+            'Nenhum usuário encontrado com este email',
+          );
+        }
+
+        if (!usuario.senhaHash) {
+          throw new CredentialsSignin('Usuário sem senha configurada');
+        }
+
+        if (!usuario.isActive) {
+          throw new CredentialsSignin(
+            'Usuário inativo. Entre em contato com o administrador',
+          );
+        }
+
+        const senhaCorreta = await compare(senha, usuario.senhaHash);
+
+        if (!senhaCorreta) {
+          // Mensagem explícita para o cliente
+          throw new CredentialsSignin('Email ou senha incorretos');
+        }
+
         return {
           id: usuario.id,
           email: usuario.email,

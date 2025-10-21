@@ -1,6 +1,5 @@
 'use client';
 
-import { useRoleGuard } from '@/lib/route-guard';
 import {
   Alert,
   Box,
@@ -13,6 +12,9 @@ import {
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { CPFInput } from '@/components/CPFInput';
+import { useRoleGuard } from '@/lib/route-guard';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
 interface UsuarioDetalhe {
   id: string;
@@ -77,7 +79,15 @@ export default function EditarUsuarioPage() {
         payload.email = entries.email;
       if (entries.tipo && entries.tipo !== usuario.tipo)
         payload.tipo = entries.tipo;
-      if (entries.cpf && entries.cpf !== usuario.cpf) payload.cpf = entries.cpf;
+      if (entries.cpf && entries.cpf !== usuario.cpf) {
+        const cpfL = limparCPF(String(entries.cpf));
+        if (!validarCPF(cpfL)) {
+          setError('CPF inválido');
+          setSaving(false);
+          return;
+        }
+        payload.cpf = cpfL;
+      }
 
       const res = await fetch(`/api/usuarios/${userId}`, {
         method: 'PUT',
@@ -157,14 +167,13 @@ export default function EditarUsuarioPage() {
           required
           fullWidth
         />
-        <TextField
+        <CPFInput
           name="cpf"
           label="CPF"
           defaultValue={usuario.cpf}
           required
           fullWidth
-          inputProps={{ pattern: '[0-9]{11}', inputMode: 'numeric' }}
-          helperText="11 dígitos (apenas números)"
+          helperText="Digite o CPF (formato 000.000.000-00)"
         />
         <TextField
           name="tipo"
