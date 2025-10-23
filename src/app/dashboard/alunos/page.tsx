@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import {
   Box,
   Button,
@@ -25,9 +25,9 @@ import {
   TableRow,
   Tooltip,
   Typography,
-} from '@mui/material';
-import NextLink from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+} from "@mui/material";
+import NextLink from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 interface Estudante {
   id: string;
@@ -46,7 +46,7 @@ interface Estudante {
 export default function AlunosPage() {
   const [alunos, setAlunos] = useState<Estudante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -54,14 +54,14 @@ export default function AlunosPage() {
 
   const carregarAlunos = useCallback(async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const res = await fetch('/api/alunos');
-      if (!res.ok) throw new Error('Falha ao carregar alunos');
+      const res = await fetch("/api/alunos");
+      if (!res.ok) throw new Error("Falha ao carregar alunos");
       const data: Estudante[] = await res.json();
       setAlunos(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
+      setError(e instanceof Error ? e.message : "Erro inesperado");
     } finally {
       setLoading(false);
     }
@@ -81,17 +81,17 @@ export default function AlunosPage() {
     try {
       setDeleting(true);
       const res = await fetch(`/api/alunos/${deletingId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || 'Falha ao excluir aluno');
+        throw new Error(data.message || "Falha ao excluir aluno");
       }
       setConfirmOpen(false);
       setDeletingId(null);
       await carregarAlunos();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao excluir aluno');
+      setError(e instanceof Error ? e.message : "Erro ao excluir aluno");
     } finally {
       setDeleting(false);
     }
@@ -123,7 +123,7 @@ export default function AlunosPage() {
             component={NextLink}
             href="/dashboard/alunos/novo"
             variant="contained"
-            color="success"
+            color="primary"
           >
             Novo aluno
           </Button>
@@ -142,7 +142,7 @@ export default function AlunosPage() {
       </Box>
 
       {error && (
-        <Card variant="outlined" sx={{ mt: 3, borderColor: 'error.light' }}>
+        <Card variant="outlined" sx={{ mt: 3, borderColor: "error.light" }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
@@ -195,8 +195,8 @@ export default function AlunosPage() {
                 <TableRow key={a.id} hover>
                   <TableCell sx={{ fontWeight: 500 }}>{a.nome}</TableCell>
                   <TableCell>{a.matricula}</TableCell>
-                  <TableCell>{a.curso || '-'}</TableCell>
-                  <TableCell>{a.turma || '-'}</TableCell>
+                  <TableCell>{a.curso || "-"}</TableCell>
+                  <TableCell>{a.turma || "-"}</TableCell>
                   <TableCell align="right">
                     <Button
                       component={NextLink}

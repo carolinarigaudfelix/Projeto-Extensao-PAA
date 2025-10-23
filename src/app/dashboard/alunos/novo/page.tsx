@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { useRoleGuard } from "@/lib/route-guard";
 import {
   Box,
   Button,
@@ -11,64 +12,63 @@ import {
   FormControlLabel,
   TextField,
   Typography,
-} from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { z } from 'zod';
-import { useRoleGuard } from '@/lib/route-guard';
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { z } from "zod";
 
 const schema = z.object({
-  nome: z.string().min(2, 'Nome muito curto'),
-  idade: z.coerce.number().int().min(1, 'Idade inválida'),
-  matricula: z.string().min(3, 'Matrícula muito curta'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
-  telefone: z.string().optional().or(z.literal('')),
-  yearSchooling: z.coerce.number().int().min(1, 'Ano escolar inválido'),
-  turma: z.string().optional().or(z.literal('')),
-  curso: z.string().optional().or(z.literal('')),
+  nome: z.string().min(2, "Nome muito curto"),
+  idade: z.coerce.number().int().min(1, "Idade inválida"),
+  matricula: z.string().min(3, "Matrícula muito curta"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  telefone: z.string().optional().or(z.literal("")),
+  yearSchooling: z.coerce.number().int().min(1, "Ano escolar inválido"),
+  turma: z.string().optional().or(z.literal("")),
+  curso: z.string().optional().or(z.literal("")),
   isSpecialNeeds: z.boolean().default(false),
-  specialNeedsDetails: z.string().optional().or(z.literal('')),
+  specialNeedsDetails: z.string().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function NovoAlunoPage() {
   const { isLoading, isAuthenticated, hasRole } = useRoleGuard([
-    'ADMIN',
-    'COORDENADOR',
-    'PROFESSOR',
-    'PEDAGOGO',
+    "ADMIN",
+    "COORDENADOR",
+    "PROFESSOR",
+    "PEDAGOGO",
   ]);
   const router = useRouter();
   const [form, setForm] = useState<FormValues>({
-    nome: '',
+    nome: "",
     idade: 0,
-    matricula: '',
-    email: '',
-    telefone: '',
+    matricula: "",
+    email: "",
+    telefone: "",
     yearSchooling: 0,
-    turma: '',
-    curso: '',
+    turma: "",
+    curso: "",
     isSpecialNeeds: false,
-    specialNeedsDetails: '',
+    specialNeedsDetails: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError("");
     setFieldErrors({});
     setSaving(true);
     const parsed = schema.safeParse(form);
@@ -83,21 +83,21 @@ export default function NovoAlunoPage() {
     }
 
     try {
-      const res = await fetch('/api/alunos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/alunos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.message || 'Falha ao criar aluno');
+        setError(j.message || "Falha ao criar aluno");
         setSaving(false);
         return;
       }
-      router.push('/dashboard/alunos');
+      router.push("/dashboard/alunos");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
+      setError(e instanceof Error ? e.message : "Erro inesperado");
       setSaving(false);
     }
   }
@@ -120,7 +120,7 @@ export default function NovoAlunoPage() {
         Novo Aluno
       </Typography>
       {error && (
-        <Card variant="outlined" sx={{ mb: 2, borderColor: 'error.light' }}>
+        <Card variant="outlined" sx={{ mb: 2, borderColor: "error.light" }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
@@ -257,11 +257,11 @@ export default function NovoAlunoPage() {
           <Button
             type="submit"
             variant="contained"
-            color="success"
+            color="primary"
             disabled={saving}
             startIcon={saving ? <CircularProgress size={18} /> : undefined}
           >
-            {saving ? 'Salvando...' : 'Salvar'}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
           <Button
             variant="outlined"

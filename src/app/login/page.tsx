@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import {
   Alert,
   AlertTitle,
@@ -16,16 +16,16 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { type FormEvent, useState } from 'react';
+} from "@mui/material";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', senha: '' });
+  const [form, setForm] = useState({ email: "", senha: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -33,10 +33,10 @@ export default function LoginPage() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email: form.email,
         senha: form.senha,
         redirect: false,
@@ -46,10 +46,10 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      router.push('/dashboard');
+      router.push("/dashboard");
       router.refresh();
     } catch {
-      setError('Erro ao fazer login');
+      setError("Erro ao fazer login");
       setLoading(false);
     }
   }
@@ -59,10 +59,10 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
+        minHeight: "100dvh",
         bgcolor: (theme) => theme.palette.grey[100],
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         py: { xs: 2, sm: 4 },
         px: { xs: 2, sm: 0 },
       }}
@@ -78,7 +78,7 @@ export default function LoginPage() {
                   <Typography
                     variant="h5"
                     fontWeight={600}
-                    sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                    sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
                   >
                     Sistema PAA
                   </Typography>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                 >
                   Programa de Apoio Acadêmico
                 </Typography>
@@ -129,12 +129,12 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     variant="contained"
-                    color="success"
+                    color="primary"
                     size="large"
                     disabled={disabled}
                     fullWidth
                   >
-                    {loading ? 'Entrando...' : 'Entrar'}
+                    {loading ? "Entrando..." : "Entrar"}
                   </Button>
                 </Stack>
               </Box>
@@ -145,7 +145,7 @@ export default function LoginPage() {
             variant="outlined"
             sx={{
               p: { xs: 1.5, sm: 2 },
-              display: 'flex',
+              display: "flex",
               gap: { xs: 1, sm: 2 },
             }}
           >
@@ -157,7 +157,7 @@ export default function LoginPage() {
               <Typography
                 variant="subtitle2"
                 gutterBottom
-                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
               >
                 Primeiro acesso?
               </Typography>
@@ -165,7 +165,7 @@ export default function LoginPage() {
                 variant="body2"
                 color="text.secondary"
                 paragraph
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, mb: 1 }}
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, mb: 1 }}
               >
                 Se ainda não existe nenhum usuário no sistema, você precisa
                 criar o primeiro usuário administrador através do Prisma Studio.
@@ -173,19 +173,19 @@ export default function LoginPage() {
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
               >
-                Execute:{' '}
+                Execute:{" "}
                 <Box
                   component="code"
                   sx={{
-                    bgcolor: 'info.light',
+                    bgcolor: "info.light",
                     px: { xs: 0.75, sm: 1 },
                     py: 0.5,
                     borderRadius: 1,
                     fontSize: { xs: 10, sm: 12 },
-                    fontFamily: 'monospace',
-                    display: 'inline-block',
+                    fontFamily: "monospace",
+                    display: "inline-block",
                   }}
                 >
                   make prisma-studio
@@ -198,7 +198,7 @@ export default function LoginPage() {
             <Typography
               variant="caption"
               color="text.disabled"
-              sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+              sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" } }}
             >
               © {new Date().getFullYear()} Planejamento de Acessibilidade na
               Avaliação
