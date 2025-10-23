@@ -43,8 +43,8 @@ lint:
 
 format:
 	@echo "✨ Formatando código..."
-	@$(NPM) exec @biomejs/biome format --write .
-	@$(NPM) exec @biomejs/biome lint --apply .
+	@npx @biomejs/biome format --write .
+	@npx @biomejs/biome check --write .
 
 clean:
 	@echo "🧹 Limpando arquivos de build e dependências..."
