@@ -16,7 +16,7 @@
     "prisma:format": "prisma format",
     "test": "vitest run",
     "test:watch": "vitest",
-    "ci": "npm run lint && npm run type-check && npm run build && npm run test"
+    "ci": "npm run prisma:generate && npm run lint && npm run type-check && npm run build && npm run test"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

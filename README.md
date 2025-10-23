@@ -455,6 +455,34 @@ NEXTAUTH_SECRET="sua-chave-secreta-aleatoria-muito-segura"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
+### Uso de `.env.example`
+Um arquivo `.env.example` está incluído no repositório com placeholders e comentários. Para iniciar rapidamente:
+```bash
+cp .env.example .env.local
+```
+Edite os valores reais (especialmente `DATABASE_URL` e `NEXTAUTH_SECRET`). Nunca versione seu `.env.local`.
+
+### Dicas para o `DATABASE_URL` (MongoDB Atlas)
+- Formato: `mongodb+srv://USUARIO:SENHA@CLUSTER_HOST/pedagogia_db?retryWrites=true&w=majority`
+- Encode caracteres especiais na senha (ex: `!` -> `%21`)
+- Em ambiente de CI, defina como secret e NÃO use arquivo commitado.
+
+### Pipeline (CI)
+O script `ci` do `package.json` agora executa em ordem:
+1. `prisma:generate`
+2. `lint`
+3. `type-check`
+4. `build`
+5. `test`
+
+Em GitHub Actions, defina:
+```yaml
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+```
+Certifique-se de liberar o IP do runner no MongoDB Atlas ou usar um banco de teste local (`mongodb://localhost:27017/pedagogia_test`).
+
 > ⚠️ **Importante**:
 > - Certifique-se de que `.env` e `.env.local` estão no `.gitignore` para não vazar credenciais!
 > - Gere uma chave secreta forte para `NEXTAUTH_SECRET`
