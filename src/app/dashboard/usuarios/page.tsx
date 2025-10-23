@@ -1,7 +1,9 @@
-'use client';
+"use client";
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { useRoleGuard } from "@/lib/route-guard";
+import { mascararCPF } from "@/lib/validators";
+import DeleteIcon from "@mui/icons-material/Delete";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   Alert,
   Box,
@@ -22,10 +24,9 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material';
-import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { useRoleGuard } from '@/lib/route-guard';
+} from "@mui/material";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 type Usuario = {
   id: string;
@@ -37,10 +38,10 @@ type Usuario = {
 };
 
 export default function UsuariosDashboardPage() {
-  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(['ADMIN']);
+  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(["ADMIN"]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -50,16 +51,16 @@ export default function UsuariosDashboardPage() {
   const fetchUsuarios = useCallback(async () => {
     try {
       setRefreshing(true);
-      const response = await fetch('/api/usuarios');
+      const response = await fetch("/api/usuarios");
       if (!response.ok) {
-        throw new Error('Erro ao carregar usuários');
+        throw new Error("Erro ao carregar usuários");
       }
       const data = await response.json();
       setUsuarios(data);
-      setError('');
+      setError("");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Erro ao carregar usuários',
+        err instanceof Error ? err.message : "Erro ao carregar usuários"
       );
     } finally {
       setLoading(false);
@@ -81,17 +82,17 @@ export default function UsuariosDashboardPage() {
     try {
       setDeleting(true);
       const res = await fetch(`/api/usuarios/${deletingId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Falha ao excluir usuário');
+        throw new Error(data.error || "Falha ao excluir usuário");
       }
       setConfirmOpen(false);
       setDeletingId(null);
       await fetchUsuarios();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao excluir usuário');
+      setError(e instanceof Error ? e.message : "Erro ao excluir usuário");
     } finally {
       setDeleting(false);
     }
@@ -168,7 +169,7 @@ export default function UsuariosDashboardPage() {
           </TableHead>
           <TableBody>
             {loading ? (
-              ['a', 'b', 'c'].map((id) => (
+              ["a", "b", "c"].map((id) => (
                 <TableRow key={`skeleton-${id}`}>
                   <TableCell colSpan={5}>
                     <Skeleton height={32} />
@@ -190,17 +191,19 @@ export default function UsuariosDashboardPage() {
             ) : (
               usuarios.map((usuario) => (
                 <TableRow key={usuario.id} hover>
-                  <TableCell>{usuario.nome || 'Sem nome'}</TableCell>
+                  <TableCell>{usuario.nome || "Sem nome"}</TableCell>
                   <TableCell>{usuario.email}</TableCell>
                   <TableCell>
                     <Chip
                       label={usuario.tipo}
                       size="small"
-                      color={usuario.tipo === 'ADMIN' ? 'primary' : 'success'}
-                      variant={usuario.tipo === 'ADMIN' ? 'filled' : 'outlined'}
+                      color={usuario.tipo === "ADMIN" ? "primary" : "success"}
+                      variant={usuario.tipo === "ADMIN" ? "filled" : "outlined"}
                     />
                   </TableCell>
-                  <TableCell>{usuario.cpf || '-'}</TableCell>
+                  <TableCell>
+                    {usuario.cpf ? mascararCPF(usuario.cpf) : "-"}
+                  </TableCell>
                   <TableCell align="right">
                     <Button
                       component={Link}

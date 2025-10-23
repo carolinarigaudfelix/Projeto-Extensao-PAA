@@ -484,6 +484,15 @@ NEXTAUTH_URL="http://localhost:3000"
 - Criação via `/dashboard/usuarios/novo` com validações (senha ≥ 6, email único, CPF único, tipo válido)
 - Edição via `/dashboard/usuarios/[id]/editar` (atualização seletiva de campos)
 
+### Privacidade de CPF
+Para atender requisitos de privacidade e LGPD, o CPF é **mascarado** em todas as exibições onde não há intenção de edição direta. Na listagem de usuários, o CPF aparece como `123.***.***-45` preservando apenas os 3 primeiros e os 2 últimos dígitos. O valor completo só é exibido dentro dos formulários de criação e edição do usuário.
+
+Implementação:
+- Função `mascararCPF(cpf)` em `src/lib/validators.ts`
+- Uso aplicado em `src/app/dashboard/usuarios/page.tsx`
+- Teste automatizado em `src/lib/__tests__/cpf.test.ts`
+
+Caso seja necessário ocultar também em outros contextos (logs, exportações), recomenda-se reutilizar esta função antes de serializar os dados.
 ### 4. API de Usuários
 - `GET /api/usuarios` (ADMIN) lista usuários
 - `POST /api/usuarios` (ADMIN) cria usuários com hash bcrypt
