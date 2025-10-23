@@ -1,5 +1,7 @@
-'use client';
+"use client";
 
+import { useRoleGuard } from "@/lib/route-guard";
+import type { Estudante } from "@/types/estudante";
 import {
   Box,
   Button,
@@ -12,65 +14,50 @@ import {
   Skeleton,
   TextField,
   Typography,
-} from '@mui/material';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { z } from 'zod';
-import { useRoleGuard } from '@/lib/route-guard';
+} from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 
 const schema = z.object({
-  nome: z.string().min(2, 'Nome muito curto'),
-  idade: z.coerce.number().int().min(1, 'Idade inválida'),
-  matricula: z.string().min(3, 'Matrícula muito curta'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
-  telefone: z.string().optional().or(z.literal('')),
-  yearSchooling: z.coerce.number().int().min(1, 'Ano escolar inválido'),
-  turma: z.string().optional().or(z.literal('')),
-  curso: z.string().optional().or(z.literal('')),
+  nome: z.string().min(2, "Nome muito curto"),
+  idade: z.coerce.number().int().min(1, "Idade inválida"),
+  matricula: z.string().min(3, "Matrícula muito curta"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  telefone: z.string().optional().or(z.literal("")),
+  yearSchooling: z.coerce.number().int().min(1, "Ano escolar inválido"),
+  turma: z.string().optional().or(z.literal("")),
+  curso: z.string().optional().or(z.literal("")),
   isSpecialNeeds: z.boolean().default(false),
-  specialNeedsDetails: z.string().optional().or(z.literal('')),
+  specialNeedsDetails: z.string().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
-
-interface Estudante {
-  id: string;
-  nome: string;
-  idade: number;
-  matricula: string;
-  email?: string;
-  telefone?: string;
-  yearSchooling: number;
-  turma?: string;
-  curso?: string;
-  isSpecialNeeds: boolean;
-  specialNeedsDetails?: string | null;
-}
 
 export default function EditarAlunoPage() {
   const {
     isLoading: authLoading,
     isAuthenticated,
     hasRole,
-  } = useRoleGuard(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO']);
+  } = useRoleGuard(["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"]);
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<FormValues>({
-    nome: '',
+    nome: "",
     idade: 0,
-    matricula: '',
-    email: '',
-    telefone: '',
+    matricula: "",
+    email: "",
+    telefone: "",
     yearSchooling: 0,
-    turma: '',
-    curso: '',
+    turma: "",
+    curso: "",
     isSpecialNeeds: false,
-    specialNeedsDetails: '',
+    specialNeedsDetails: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
@@ -82,7 +69,7 @@ export default function EditarAlunoPage() {
         const res = await fetch(`/api/alunos/${id}`);
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          setError(j.message || 'Falha ao carregar aluno');
+          setError(j.message || "Falha ao carregar aluno");
           setLoading(false);
           return;
         }
@@ -91,17 +78,17 @@ export default function EditarAlunoPage() {
           nome: data.nome,
           idade: data.idade,
           matricula: data.matricula,
-          email: data.email || '',
-          telefone: data.telefone || '',
+          email: data.email || "",
+          telefone: data.telefone || "",
           yearSchooling: data.yearSchooling,
-          turma: data.turma || '',
-          curso: data.curso || '',
+          turma: data.turma || "",
+          curso: data.curso || "",
           isSpecialNeeds: data.isSpecialNeeds,
-          specialNeedsDetails: data.specialNeedsDetails || '',
+          specialNeedsDetails: data.specialNeedsDetails || "",
         });
         setLoading(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Erro inesperado');
+        setError(e instanceof Error ? e.message : "Erro inesperado");
         setLoading(false);
       }
     }
@@ -110,18 +97,18 @@ export default function EditarAlunoPage() {
   }, [id, hasRole]);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError("");
     setFieldErrors({});
     setSaving(true);
 
@@ -138,20 +125,20 @@ export default function EditarAlunoPage() {
 
     try {
       const res = await fetch(`/api/alunos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.message || 'Falha ao atualizar aluno');
+        setError(j.message || "Falha ao atualizar aluno");
         setSaving(false);
         return;
       }
       router.push(`/dashboard/alunos/${id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
+      setError(e instanceof Error ? e.message : "Erro inesperado");
       setSaving(false);
     }
   }
@@ -191,7 +178,7 @@ export default function EditarAlunoPage() {
         Atualize as informações do aluno
       </Typography>
       {error && (
-        <Card variant="outlined" sx={{ mb: 2, borderColor: 'error.light' }}>
+        <Card variant="outlined" sx={{ mb: 2, borderColor: "error.light" }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
@@ -332,7 +319,7 @@ export default function EditarAlunoPage() {
             disabled={saving}
             startIcon={saving ? <CircularProgress size={18} /> : undefined}
           >
-            {saving ? 'Salvando...' : 'Salvar alterações'}
+            {saving ? "Salvando..." : "Salvar alterações"}
           </Button>
           <Button
             variant="outlined"

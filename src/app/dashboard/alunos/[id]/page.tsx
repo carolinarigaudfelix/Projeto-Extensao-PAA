@@ -1,6 +1,8 @@
-'use client';
+"use client";
 
-import EditIcon from '@mui/icons-material/Edit';
+import { useRoleGuard } from "@/lib/route-guard";
+import type { Estudante } from "@/types/estudante";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -9,43 +11,34 @@ import {
   Chip,
   Container,
   Divider,
+  Paper,
   Skeleton,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
-} from '@mui/material';
-import NextLink from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useRoleGuard } from '@/lib/route-guard';
-
-interface Estudante {
-  id: string;
-  nome: string;
-  idade: number;
-  matricula: string;
-  email?: string;
-  telefone?: string;
-  yearSchooling: number;
-  turma?: string;
-  curso?: string;
-  isSpecialNeeds: boolean;
-  specialNeedsDetails?: string | null;
-  criado?: string;
-  atualizado?: string;
-}
+} from "@mui/material";
+import NextLink from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function DetalheAlunoPage() {
   const {
     isLoading: authLoading,
     isAuthenticated,
     hasRole,
-  } = useRoleGuard(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO']);
+  } = useRoleGuard(["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"]);
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [aluno, setAluno] = useState<Estudante | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!hasRole) return;
@@ -55,7 +48,7 @@ export default function DetalheAlunoPage() {
         const res = await fetch(`/api/alunos/${id}`);
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          setError(j.message || 'Falha ao carregar aluno');
+          setError(j.message || "Falha ao carregar aluno");
           setLoading(false);
           return;
         }
@@ -63,7 +56,7 @@ export default function DetalheAlunoPage() {
         setAluno(data);
         setLoading(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Erro inesperado');
+        setError(e instanceof Error ? e.message : "Erro inesperado");
         setLoading(false);
       }
     }
@@ -95,20 +88,20 @@ export default function DetalheAlunoPage() {
   if (error || !aluno) {
     return (
       <Container maxWidth="lg" sx={{ py: 2 }}>
-        <Card variant="outlined" sx={{ borderColor: 'error.light' }}>
+        <Card variant="outlined" sx={{ borderColor: "error.light" }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
             </Typography>
             <Typography variant="body2" color="error.main">
-              {error || 'Aluno não encontrado'}
+              {error || "Aluno não encontrado"}
             </Typography>
           </CardContent>
         </Card>
         <Box mt={2}>
           <Button
             variant="outlined"
-            onClick={() => router.push('/dashboard/alunos')}
+            onClick={() => router.push("/dashboard/alunos")}
           >
             Voltar para lista
           </Button>
@@ -147,7 +140,7 @@ export default function DetalheAlunoPage() {
           </Button>
           <Button
             variant="outlined"
-            onClick={() => router.push('/dashboard/alunos')}
+            onClick={() => router.push("/dashboard/alunos")}
           >
             Voltar
           </Button>
@@ -177,13 +170,13 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Email
               </Typography>
-              <Typography variant="body1">{aluno.email || '-'}</Typography>
+              <Typography variant="body1">{aluno.email || "-"}</Typography>
             </Box>
             <Box flex="1 1 200px">
               <Typography variant="caption" color="text.secondary">
                 Telefone
               </Typography>
-              <Typography variant="body1">{aluno.telefone || '-'}</Typography>
+              <Typography variant="body1">{aluno.telefone || "-"}</Typography>
             </Box>
           </Box>
         </CardContent>
@@ -214,13 +207,13 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Turma
               </Typography>
-              <Typography variant="body1">{aluno.turma || '-'}</Typography>
+              <Typography variant="body1">{aluno.turma || "-"}</Typography>
             </Box>
             <Box flex="1 1 200px">
               <Typography variant="caption" color="text.secondary">
                 Curso
               </Typography>
-              <Typography variant="body1">{aluno.curso || '-'}</Typography>
+              <Typography variant="body1">{aluno.curso || "-"}</Typography>
             </Box>
           </Box>
         </CardContent>
@@ -236,11 +229,11 @@ export default function DetalheAlunoPage() {
             <Chip
               label={
                 aluno.isSpecialNeeds
-                  ? 'Possui necessidades especiais'
-                  : 'Não possui necessidades especiais'
+                  ? "Possui necessidades especiais"
+                  : "Não possui necessidades especiais"
               }
-              color={aluno.isSpecialNeeds ? 'warning' : 'default'}
-              variant={aluno.isSpecialNeeds ? 'filled' : 'outlined'}
+              color={aluno.isSpecialNeeds ? "warning" : "default"}
+              variant={aluno.isSpecialNeeds ? "filled" : "outlined"}
             />
           </Box>
           {aluno.isSpecialNeeds && aluno.specialNeedsDetails && (
@@ -248,13 +241,177 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Detalhes
               </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
                 {aluno.specialNeedsDetails}
               </Typography>
             </Box>
           )}
         </CardContent>
       </Card>
+
+      {/* Planejamento de Acessibilidade */}
+      {(aluno.apoioEducacional?.length ||
+        aluno.objetivosAvaliacao ||
+        aluno.conhecimentoEstudante ||
+        aluno.planificacaoDescricao ||
+        aluno.intervencaoPreliminar ||
+        aluno.observacoes) && (
+        <Card sx={{ mt: 2 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Planejamento de Acessibilidade na Avaliação (PAA)
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {/* Apoios */}
+            {aluno.apoioEducacional?.length ? (
+              <Box mb={2}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Apoio Educacional
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {aluno.apoioEducacional.map((ap) => (
+                    <Chip key={ap} label={ap} color="primary" size="small" />
+                  ))}
+                </Stack>
+                {aluno.apoioOutros && aluno.apoioOutros.trim() !== "" && (
+                  <Typography variant="body2" mt={1}>
+                    Outros: {aluno.apoioOutros}
+                  </Typography>
+                )}
+              </Box>
+            ) : null}
+            {/* Equipe Pedagógica */}
+            {aluno.equipePedagogica?.length ? (
+              <Box mb={2}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Equipe Pedagógica
+                </Typography>
+                <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nome</TableCell>
+                        <TableCell>Função</TableCell>
+                        <TableCell>Contato</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {aluno.equipePedagogica.map((m) => (
+                        <TableRow key={m.id}>
+                          <TableCell>{m.nome || "-"}</TableCell>
+                          <TableCell>{m.funcao || "-"}</TableCell>
+                          <TableCell>{m.contato || "-"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            ) : null}
+            {/* Objetivos */}
+            {aluno.objetivosAvaliacao &&
+              aluno.objetivosAvaliacao.trim() !== "" && (
+                <Box mb={2}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Objetivos da Avaliação
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                    {aluno.objetivosAvaliacao}
+                  </Typography>
+                </Box>
+              )}
+            {/* Conhecimento */}
+            {(aluno.conhecimentoEstudante ||
+              aluno.conhecimentoMultiplasFormas ||
+              aluno.conhecimentoDescricao) && (
+              <Box mb={2}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Conhecimento do Estudante
+                </Typography>
+                {aluno.conhecimentoEstudante && (
+                  <Typography
+                    variant="body2"
+                    sx={{ whiteSpace: "pre-wrap" }}
+                    mb={1}
+                  >
+                    {aluno.conhecimentoEstudante}
+                  </Typography>
+                )}
+                {aluno.conhecimentoMultiplasFormas && (
+                  <Typography
+                    variant="body2"
+                    sx={{ whiteSpace: "pre-wrap" }}
+                    mb={1}
+                  >
+                    Múltiplas Formas: {aluno.conhecimentoMultiplasFormas}
+                  </Typography>
+                )}
+                {aluno.conhecimentoDescricao && (
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                    Detalhamento: {aluno.conhecimentoDescricao}
+                  </Typography>
+                )}
+              </Box>
+            )}
+            {/* Planificação */}
+            {aluno.planificacaoDescricao &&
+              aluno.planificacaoDescricao.trim() !== "" && (
+                <Box mb={2}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Planificação Interdisciplinar
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                    {aluno.planificacaoDescricao}
+                  </Typography>
+                </Box>
+              )}
+            {/* Intervenções */}
+            {(aluno.intervencaoPreliminar ||
+              aluno.intervencaoCompreensiva ||
+              aluno.intervencaoTransicional) && (
+              <Box mb={2}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Intervenções
+                </Typography>
+                {aluno.intervencaoPreliminar && (
+                  <Typography
+                    variant="body2"
+                    sx={{ whiteSpace: "pre-wrap" }}
+                    mb={1}
+                  >
+                    Preliminar: {aluno.intervencaoPreliminar}
+                  </Typography>
+                )}
+                {aluno.intervencaoCompreensiva && (
+                  <Typography
+                    variant="body2"
+                    sx={{ whiteSpace: "pre-wrap" }}
+                    mb={1}
+                  >
+                    Compreensiva: {aluno.intervencaoCompreensiva}
+                  </Typography>
+                )}
+                {aluno.intervencaoTransicional && (
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                    Transicional: {aluno.intervencaoTransicional}
+                  </Typography>
+                )}
+              </Box>
+            )}
+            {/* Observações */}
+            {aluno.observacoes && aluno.observacoes.trim() !== "" && (
+              <Box mb={1}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Observações
+                </Typography>
+                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  {aluno.observacoes}
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </Container>
   );
 }

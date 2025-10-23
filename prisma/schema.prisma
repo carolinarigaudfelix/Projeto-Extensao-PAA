@@ -43,6 +43,20 @@ model Estudante {
   isSpecialNeeds      Boolean @default(false)
   specialNeedsDetails String?
 
+  // Planejamento de Acessibilidade (Wizard)
+  apoioEducacional            String[] // Lista de apoios selecionados (lista vazia se nenhum)
+  apoioOutros                 String? // Texto livre para outros apoios
+  equipePedagogica            Json? // Array de membros { id, nome, funcao, contato }
+  objetivosAvaliacao          String? // Objetivos da avaliação
+  conhecimentoEstudante       String? // Conhecimento do estudante
+  conhecimentoMultiplasFormas String? // Múltiplas formas de representar
+  conhecimentoDescricao       String? // Detalhamento adicional
+  planificacaoDescricao       String? // Planificação interdisciplinar
+  intervencaoPreliminar       String? // Intervenção preliminar
+  intervencaoCompreensiva     String? // Intervenção compreensiva
+  intervencaoTransicional     String? // Intervenção transicional
+  observacoes                 String? // Observações finais
+
   // Relacionamentos
   avaliacoes Avaliacao[]
 }

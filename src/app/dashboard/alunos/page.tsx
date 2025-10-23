@@ -1,5 +1,6 @@
 "use client";
 
+import type { Estudante } from "@/types/estudante";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
@@ -8,6 +9,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -17,6 +19,7 @@ import {
   IconButton,
   Paper,
   Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -28,20 +31,6 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
-
-interface Estudante {
-  id: string;
-  nome: string;
-  idade: number;
-  matricula: string;
-  email?: string;
-  telefone?: string;
-  yearSchooling: number;
-  turma?: string;
-  curso?: string;
-  isSpecialNeeds: boolean;
-  specialNeedsDetails?: string | null;
-}
 
 export default function AlunosPage() {
   const [alunos, setAlunos] = useState<Estudante[]>([]);
@@ -162,6 +151,7 @@ export default function AlunosPage() {
               <TableCell sx={{ fontWeight: 600 }}>Matrícula</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Curso</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Turma</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Planejamento</TableCell>
               <TableCell sx={{ fontWeight: 600 }} align="right">
                 Ações
               </TableCell>
@@ -197,6 +187,38 @@ export default function AlunosPage() {
                   <TableCell>{a.matricula}</TableCell>
                   <TableCell>{a.curso || "-"}</TableCell>
                   <TableCell>{a.turma || "-"}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                      <Chip
+                        size="small"
+                        label={`Apoios: ${a.apoioEducacional?.length ?? 0}`}
+                        color={
+                          a.apoioEducacional?.length ? "primary" : "default"
+                        }
+                        variant={
+                          a.apoioEducacional?.length ? "filled" : "outlined"
+                        }
+                      />
+                      {a.objetivosAvaliacao &&
+                        a.objetivosAvaliacao.trim() !== "" && (
+                          <Chip
+                            size="small"
+                            label="Objetivos"
+                            color="success"
+                            variant="outlined"
+                          />
+                        )}
+                      {a.intervencaoPreliminar &&
+                        a.intervencaoPreliminar.trim() !== "" && (
+                          <Chip
+                            size="small"
+                            label="Interv."
+                            color="warning"
+                            variant="outlined"
+                          />
+                        )}
+                    </Stack>
+                  </TableCell>
                   <TableCell align="right">
                     <Button
                       component={NextLink}
