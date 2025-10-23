@@ -1,84 +1,161 @@
-'use client';
+"use client";
 
+import { CPFInput } from "@/components/CPFInput";
+import { useRoleGuard } from "@/lib/route-guard";
+import { limparCPF, validarCPF } from "@/lib/validators";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import {
-  Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   CircularProgress,
+  Container,
+  LinearProgress,
   MenuItem,
   Paper,
   TextField,
   Typography,
-} from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { CPFInput } from '@/components/CPFInput';
-import { useRoleGuard } from '@/lib/route-guard';
-import { limparCPF, validarCPF } from '@/lib/validators';
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 
-const tiposValidos = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] as const;
+const tiposValidos = ["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"] as const;
 
-interface FormData {
-  nome: string;
-  email: string;
-  senha: string;
-  cpf: string;
-  tipo: string;
-}
+const baseSchema = z.object({
+  nome: z.string().min(2, "Nome muito curto"),
+  email: z.string().email("Email inválido"),
+  senha: z.string().min(6, "Senha muito curta"),
+  cpf: z.string().min(11, "CPF incompleto"),
+  tipo: z.enum(tiposValidos),
+});
 
-export default function NovoUsuarioPage() {
-  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(['ADMIN']);
+type FormValues = z.infer<typeof baseSchema> & { draft: boolean };
+
+export default function NovoUsuarioWizardPage() {
+  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(["ADMIN"]);
   const router = useRouter();
-  const [form, setForm] = useState<FormData>({
-    nome: '',
-    email: '',
-    senha: '',
-    cpf: '',
-    tipo: 'PROFESSOR',
+
+  const [form, setForm] = useState<FormValues>({
+    nome: "",
+    email: "",
+    senha: "",
+    cpf: "",
+    tipo: "PROFESSOR",
+    draft: false,
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [cpfValido, setCpfValido] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [draftMessage, setDraftMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [step, setStep] = useState(0);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // Carregar rascunho
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("wizardUsuarioDraft");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setForm((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch {}
+  }, []);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError('');
-    setSuccess('');
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function salvarRascunho() {
+    try {
+      localStorage.setItem(
+        "wizardUsuarioDraft",
+        JSON.stringify({
+          ...form,
+          draft: true,
+          savedAt: new Date().toISOString(),
+        })
+      );
+      setForm((prev) => ({ ...prev, draft: true }));
+      setDraftMessage("Rascunho salvo.");
+      setTimeout(() => setDraftMessage(""), 4000);
+    } catch {
+      setError("Falha ao salvar rascunho local.");
+    }
+  }
+
+  const totalSteps = 4;
+  const progressPercent = useMemo(
+    () => Math.round(((step + 1 - 1) / (totalSteps - 1)) * 100),
+    [step]
+  );
+
+  function nextStep() {
+    setStep((s) => Math.min(totalSteps - 1, s + 1));
+  }
+  function prevStep() {
+    setStep((s) => Math.max(0, s - 1));
+  }
+
+  async function handleSubmit(e: React.FormEvent, draft = false) {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setFieldErrors({});
     setSaving(true);
 
-    try {
-      // Sanitiza e valida CPF antes de enviar
-      const cpfL = limparCPF(form.cpf);
-      if (!validarCPF(cpfL)) {
-        setError('CPF inválido');
-        return;
-      }
+    if (draft) {
+      salvarRascunho();
+      setSaving(false);
+      return;
+    }
 
-      const res = await fetch('/api/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, cpf: cpfL }),
+    const parsed = baseSchema.safeParse(form);
+    if (!parsed.success) {
+      const errs: Record<string, string> = {};
+      parsed.error.issues.forEach((i) => {
+        if (i.path[0]) errs[i.path[0].toString()] = i.message;
       });
+      setFieldErrors(errs);
+      setSaving(false);
+      return;
+    }
 
+    // Validar CPF sanitizado
+    const cpfL = limparCPF(parsed.data.cpf);
+    if (!validarCPF(cpfL)) {
+      setFieldErrors((f) => ({ ...f, cpf: "CPF inválido" }));
+      setSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...parsed.data, cpf: cpfL }),
+      });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.error || 'Erro ao criar usuário');
+        setError(j.error || "Falha ao criar usuário");
+        setSaving(false);
         return;
       }
-
-      setSuccess('Usuário criado com sucesso!');
+      localStorage.removeItem("wizardUsuarioDraft");
+      setSuccessMessage("Usuário criado com sucesso. Redirecionando...");
       setTimeout(() => {
-        router.push('/dashboard/usuarios');
+        router.push("/dashboard/usuarios");
         router.refresh();
-      }, 800);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
-    } finally {
+      }, 900);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro inesperado");
       setSaving(false);
     }
   }
@@ -90,106 +167,266 @@ export default function NovoUsuarioPage() {
       </Typography>
     );
   if (!isAuthenticated)
-    return <Alert severity="error">Você precisa estar autenticado.</Alert>;
-  if (!hasRole)
-    return <Alert severity="error">Acesso restrito a administradores.</Alert>;
+    return (
+      <Typography color="error">Você precisa estar autenticado.</Typography>
+    );
+  if (!hasRole) return <Typography color="error">Acesso restrito.</Typography>;
+
+  const stepComponents = [
+    // 1. Identificação
+    <Box key="step1" display="flex" flexDirection="column" gap={2}>
+      <TextField
+        label="Nome"
+        name="nome"
+        value={form.nome}
+        onChange={handleChange}
+        fullWidth
+        required
+        error={Boolean(fieldErrors.nome)}
+        helperText={fieldErrors.nome}
+      />
+      <TextField
+        label="Email"
+        name="email"
+        type="email"
+        value={form.email}
+        onChange={handleChange}
+        fullWidth
+        required
+        error={Boolean(fieldErrors.email)}
+        helperText={fieldErrors.email}
+      />
+      <CPFInput
+        name="cpf"
+        label="CPF"
+        value={form.cpf}
+        onChange={handleChange}
+        fullWidth
+        required
+        helperText={fieldErrors.cpf || "Digite o CPF (000.000.000-00)"}
+        error={Boolean(fieldErrors.cpf)}
+      />
+    </Box>,
+    // 2. Credenciais
+    <Box key="step2" display="flex" flexDirection="column" gap={2}>
+      <TextField
+        label="Senha"
+        name="senha"
+        type="password"
+        value={form.senha}
+        onChange={handleChange}
+        fullWidth
+        required
+        error={Boolean(fieldErrors.senha)}
+        helperText={fieldErrors.senha || "Mínimo 6 caracteres"}
+      />
+    </Box>,
+    // 3. Perfil
+    <Box key="step3" display="flex" flexDirection="column" gap={2}>
+      <TextField
+        name="tipo"
+        label="Tipo de Usuário"
+        value={form.tipo}
+        onChange={handleChange}
+        select
+        fullWidth
+        required
+        error={Boolean(fieldErrors.tipo)}
+        helperText={fieldErrors.tipo}
+      >
+        {tiposValidos.map((t) => (
+          <MenuItem key={t} value={t}>
+            {t}
+          </MenuItem>
+        ))}
+      </TextField>
+    </Box>,
+    // 4. Revisão
+    <Box key="step4" display="flex" flexDirection="column" gap={2}>
+      <Typography variant="subtitle1" fontWeight={600}>
+        Revisão dos Dados
+      </Typography>
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Typography variant="body2" gutterBottom>
+          <strong>Nome:</strong> {form.nome || "(não informado)"}
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          <strong>Email:</strong> {form.email || "(não informado)"}
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          <strong>CPF:</strong> {form.cpf || "(não informado)"}
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          <strong>Tipo:</strong> {form.tipo}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          (A senha não é exibida por segurança.)
+        </Typography>
+      </Paper>
+    </Box>,
+  ];
 
   return (
-    <Paper sx={{ maxWidth: 600, p: 3 }} elevation={1}>
-      <Typography variant="h5" fontWeight={600} mb={2}>
-        Novo Usuário
-      </Typography>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        display="flex"
-        flexDirection="column"
-        gap={2}
-      >
-        <TextField
-          name="nome"
-          label="Nome"
-          value={form.nome}
-          onChange={handleChange}
-          required
-          fullWidth
-        />
-        <TextField
-          name="email"
-          label="Email"
-          type="email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          fullWidth
-        />
-        <TextField
-          name="senha"
-          label="Senha"
-          type="password"
-          value={form.senha}
-          onChange={handleChange}
-          required
-          fullWidth
-          inputProps={{ minLength: 6 }}
-          helperText="Mínimo 6 caracteres"
-        />
-        <CPFInput
-          name="cpf"
-          label="CPF"
-          value={form.cpf}
-          onChange={handleChange}
-          onCPFChange={(_, v) => setCpfValido(v)}
-          required
-          fullWidth
-          helperText="Digite o CPF (formato 000.000.000-00)"
-        />
-        <TextField
-          name="tipo"
-          label="Tipo"
-          value={form.tipo}
-          onChange={handleChange}
-          required
-          select
-          fullWidth
+    <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 3 } }}>
+      <Card elevation={3} sx={{ overflow: "hidden" }}>
+        <Box
+          sx={{
+            bgcolor: "primary.dark",
+            color: "primary.contrastText",
+            px: 2.5,
+            py: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
         >
-          {tiposValidos.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
-          ))}
-        </TextField>
-        <Box display="flex" gap={2} mt={1}>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={saving || !cpfValido}
-          >
-            {saving ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              'Criar Usuário'
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={() => router.back()}
-          >
-            Cancelar
-          </Button>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Novo Usuário - Wizard
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+              Progresso do formulário
+            </Typography>
+          </Box>
+          <CheckCircleOutlinedIcon sx={{ opacity: 0.35 }} />
         </Box>
-      </Box>
-    </Paper>
+        <Box sx={{ px: 2.5, pt: 2 }}>
+          <Box display="flex" alignItems="center" gap={2} mb={1}>
+            <Box flex={1}>
+              <LinearProgress
+                variant="determinate"
+                value={progressPercent}
+                color="primary"
+              />
+            </Box>
+            <Typography variant="caption" fontWeight={600} minWidth={60}>
+              {progressPercent}%
+            </Typography>
+          </Box>
+        </Box>
+        {(error || draftMessage || successMessage) && (
+          <Box px={2.5}>
+            {error && (
+              <Paper
+                variant="outlined"
+                sx={{ p: 1.4, mb: 2, borderColor: "error.light" }}
+              >
+                <Typography variant="subtitle2" color="error" gutterBottom>
+                  Erro
+                </Typography>
+                <Typography variant="body2" color="error.main">
+                  {error}
+                </Typography>
+              </Paper>
+            )}
+            {draftMessage && (
+              <Paper
+                variant="outlined"
+                sx={{ p: 1.2, mb: 2, borderColor: "primary.light" }}
+              >
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Rascunho
+                </Typography>
+                <Typography variant="body2">{draftMessage}</Typography>
+              </Paper>
+            )}
+            {successMessage && (
+              <Paper
+                variant="outlined"
+                sx={{ p: 1.2, mb: 2, borderColor: "success.light" }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  color="success.main"
+                  gutterBottom
+                >
+                  Sucesso
+                </Typography>
+                <Typography variant="body2" color="success.main">
+                  {successMessage}
+                </Typography>
+              </Paper>
+            )}
+          </Box>
+        )}
+        <CardContent sx={{ pt: 0, px: 2.5, pb: 3 }}>
+          <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+            {
+              ["1. Identificação", "2. Credenciais", "3. Perfil", "4. Revisão"][
+                step
+              ]
+            }
+          </Typography>
+          <Box component="form" onSubmit={(e) => handleSubmit(e)}>
+            {stepComponents[step]}
+            <Box
+              mt={3}
+              display="flex"
+              flexWrap="wrap"
+              gap={2}
+              justifyContent="space-between"
+            >
+              <Box display="flex" gap={1}>
+                {step > 0 && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<ArrowBackIosNewIcon fontSize="inherit" />}
+                    onClick={prevStep}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                {step < totalSteps - 1 && (
+                  <Button
+                    variant="contained"
+                    endIcon={<ArrowForwardIosIcon fontSize="inherit" />}
+                    onClick={nextStep}
+                  >
+                    Próximo
+                  </Button>
+                )}
+              </Box>
+              {step === totalSteps - 1 && (
+                <Box display="flex" gap={1}>
+                  <Button
+                    variant="outlined"
+                    startIcon={
+                      saving ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <SaveOutlinedIcon />
+                      )
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSubmit(e, true);
+                    }}
+                  >
+                    Salvar Rascunho
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={
+                      saving ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        <CheckCircleOutlinedIcon />
+                      )
+                    }
+                    type="submit"
+                    disabled={saving}
+                  >
+                    {saving ? "Salvando..." : "Finalizar"}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </Container>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRoleGuard } from "@/lib/route-guard";
 import { mascararCPF } from "@/lib/validators";
+import type { Usuario as UsuarioType } from "@/types/usuario";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import {
@@ -28,14 +29,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-type Usuario = {
-  id: string;
-  nome: string;
-  email: string;
-  tipo: string;
-  cpf?: string;
-  criado: string;
-};
+type Usuario = UsuarioType & { criado: string };
 
 export default function UsuariosDashboardPage() {
   const { isLoading, isAuthenticated, hasRole } = useRoleGuard(["ADMIN"]);
