@@ -1,8 +1,8 @@
-import type { TokenPayload } from '@/types/auth';
 import type { TipoUsuario } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { useSession } from 'next-auth/react';
-import type { NextRequest } from 'next/server';
+import type { TokenPayload } from '@/types/auth';
 
 function resolveSecret(): string | undefined {
   const s = process.env.NEXTAUTH_SECRET;

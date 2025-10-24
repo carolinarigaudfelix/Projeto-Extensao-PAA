@@ -3,9 +3,9 @@
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import {
-  alpha,
   AppBar,
   Avatar,
+  alpha,
   Box,
   Divider,
   IconButton,
@@ -54,7 +54,12 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       })}
     >
       <Toolbar
-        sx={{ minHeight: 64, display: 'flex', justifyContent: 'space-between' }}
+        sx={{
+          minHeight: { xs: 56, sm: 64 },
+          display: 'flex',
+          justifyContent: 'space-between',
+          px: { xs: 1, sm: 2 },
+        }}
       >
         <Box display="flex" alignItems="center" gap={1}>
           {onToggleSidebar && (
@@ -63,12 +68,28 @@ export function Header({ onToggleSidebar }: HeaderProps) {
               color="inherit"
               onClick={onToggleSidebar}
               sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+              aria-label="abrir menu"
             >
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" fontWeight={600} noWrap>
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            noWrap
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontSize: { sm: '1.25rem', md: '1.5rem' },
+            }}
+          >
             PAA Dashboard
+          </Typography>
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            sx={{ display: { xs: 'block', sm: 'none' } }}
+          >
+            PAA
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={2}>

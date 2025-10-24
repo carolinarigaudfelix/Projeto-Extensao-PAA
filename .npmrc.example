@@ -1,0 +1,11 @@
+# Arquivo de exemplo para configuração local do NPM
+# Copie para .npmrc e ajuste conforme necessário
+
+# Para usar o registry público do NPM (padrão)
+registry=https://registry.npmjs.org/
+
+# Para projetos corporativos, descomente e configure:
+# registry=https://seu-artifactory.com/artifactory/api/npm/npm-repos/
+
+# Para projetos privados com autenticação:
+# //registry.npmjs.org/:_authToken=${NPM_TOKEN}

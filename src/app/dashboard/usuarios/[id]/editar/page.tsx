@@ -1,6 +1,9 @@
-'use client';
+"use client";
 
-import { useRoleGuard } from '@/lib/route-guard';
+import { CPFInput } from "@/components/CPFInput";
+import { useRoleGuard } from "@/lib/route-guard";
+import { limparCPF, validarCPF } from "@/lib/validators";
+import type { Usuario as UsuarioType } from "@/types/usuario";
 import {
   Alert,
   Box,
@@ -10,31 +13,29 @@ import {
   Paper,
   TextField,
   Typography,
-} from '@mui/material';
-import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+} from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
-interface UsuarioDetalhe {
-  id: string;
-  nome: string;
-  email: string;
-  tipo: string;
-  cpf: string;
+interface UsuarioDetalhe extends UsuarioType {
   atualizado: string;
   isActive: boolean;
 }
 
-const tiposValidos = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] as const;
+const tiposValidos = ["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"] as const;
 
 export default function EditarUsuarioPage() {
-  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(['ADMIN']);
+  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(["ADMIN"]);
   const params = useParams();
   const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Estado controlado para o campo tipo
+  const [tipo, setTipo] = useState<string>("");
 
   const userId = Array.isArray(params?.id)
     ? params.id[0]
@@ -45,12 +46,13 @@ export default function EditarUsuarioPage() {
     if (!hasRole) return;
     try {
       const res = await fetch(`/api/usuarios/${userId}`);
-      if (!res.ok) throw new Error('Falha ao carregar usuário');
+      if (!res.ok) throw new Error("Falha ao carregar usuário");
       const data = await res.json();
       setUsuario(data);
-      setError('');
+      setTipo(data.tipo || "");
+      setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
+      setError(e instanceof Error ? e.message : "Erro inesperado");
     } finally {
       setLoading(false);
     }
@@ -64,8 +66,8 @@ export default function EditarUsuarioPage() {
     event.preventDefault();
     if (!userId) return;
     if (!usuario) return;
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setSaving(true);
     try {
       const formData = new FormData(event.currentTarget);
@@ -75,28 +77,35 @@ export default function EditarUsuarioPage() {
         payload.nome = entries.nome;
       if (entries.email && entries.email !== usuario.email)
         payload.email = entries.email;
-      if (entries.tipo && entries.tipo !== usuario.tipo)
-        payload.tipo = entries.tipo;
-      if (entries.cpf && entries.cpf !== usuario.cpf) payload.cpf = entries.cpf;
+      if (tipo && tipo !== usuario.tipo) payload.tipo = tipo;
+      if (entries.cpf && entries.cpf !== usuario.cpf) {
+        const cpfL = limparCPF(String(entries.cpf));
+        if (!validarCPF(cpfL)) {
+          setError("CPF inválido");
+          setSaving(false);
+          return;
+        }
+        payload.cpf = cpfL;
+      }
 
       const res = await fetch(`/api/usuarios/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.error || 'Falha ao salvar');
+        setError(j.error || "Falha ao salvar");
         return;
       }
-      setSuccess('Usuário atualizado com sucesso');
+      setSuccess("Usuário atualizado com sucesso");
       carregarUsuario();
       setTimeout(() => {
-        router.push('/dashboard/usuarios');
+        router.push("/dashboard/usuarios");
         router.refresh();
       }, 800);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro inesperado');
+      setError(e instanceof Error ? e.message : "Erro inesperado");
     } finally {
       setSaving(false);
     }
@@ -157,19 +166,19 @@ export default function EditarUsuarioPage() {
           required
           fullWidth
         />
-        <TextField
+        <CPFInput
           name="cpf"
           label="CPF"
           defaultValue={usuario.cpf}
           required
           fullWidth
-          inputProps={{ pattern: '[0-9]{11}', inputMode: 'numeric' }}
-          helperText="11 dígitos (apenas números)"
+          helperText="Digite o CPF (formato 000.000.000-00)"
         />
         <TextField
           name="tipo"
           label="Tipo"
-          defaultValue={usuario.tipo}
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value)}
           required
           select
           fullWidth
@@ -182,7 +191,7 @@ export default function EditarUsuarioPage() {
         </TextField>
         <Box display="flex" gap={2} mt={1}>
           <Button type="submit" variant="contained" disabled={saving}>
-            {saving ? <CircularProgress size={20} color="inherit" /> : 'Salvar'}
+            {saving ? <CircularProgress size={20} color="inherit" /> : "Salvar"}
           </Button>
           <Button
             type="button"

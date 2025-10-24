@@ -1,6 +1,6 @@
-import { authConfig } from '@/app/auth/config';
-import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/app/auth/config';
 
 // Em v5 podemos inicializar NextAuth e usar helper auth() para acessar sessão
 const { auth } = NextAuth(authConfig);

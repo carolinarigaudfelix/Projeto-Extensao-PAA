@@ -455,6 +455,34 @@ NEXTAUTH_SECRET="sua-chave-secreta-aleatoria-muito-segura"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
+### Uso de `.env.example`
+Um arquivo `.env.example` está incluído no repositório com placeholders e comentários. Para iniciar rapidamente:
+```bash
+cp .env.example .env.local
+```
+Edite os valores reais (especialmente `DATABASE_URL` e `NEXTAUTH_SECRET`). Nunca versione seu `.env.local`.
+
+### Dicas para o `DATABASE_URL` (MongoDB Atlas)
+- Formato: `mongodb+srv://USUARIO:SENHA@CLUSTER_HOST/pedagogia_db?retryWrites=true&w=majority`
+- Encode caracteres especiais na senha (ex: `!` -> `%21`)
+- Em ambiente de CI, defina como secret e NÃO use arquivo commitado.
+
+### Pipeline (CI)
+O script `ci` do `package.json` agora executa em ordem:
+1. `prisma:generate`
+2. `lint`
+3. `type-check`
+4. `build`
+5. `test`
+
+Em GitHub Actions, defina:
+```yaml
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+```
+Certifique-se de liberar o IP do runner no MongoDB Atlas ou usar um banco de teste local (`mongodb://localhost:27017/pedagogia_test`).
+
 > ⚠️ **Importante**:
 > - Certifique-se de que `.env` e `.env.local` estão no `.gitignore` para não vazar credenciais!
 > - Gere uma chave secreta forte para `NEXTAUTH_SECRET`
@@ -466,10 +494,6 @@ NEXTAUTH_URL="http://localhost:3000"
 2. Faça commit das mudanças: `git commit -m 'feat: Adiciona nova funcionalidade'`
 3. Envie para a branch: `git push origin feature/nome-da-feature`
 4. Abra um Pull Request
-
-## 📜 Changelog / Alterações Recentes
-
-Esta seção consolida as principais modificações aplicadas recentemente ao projeto (originadas de `ALTERACOES.md`).
 
 ### 1. Fluxo de Autenticação
 - Página inicial (`/`) agora redireciona para `/login` (fluxo explícito de entrada)
@@ -488,6 +512,15 @@ Esta seção consolida as principais modificações aplicadas recentemente ao pr
 - Criação via `/dashboard/usuarios/novo` com validações (senha ≥ 6, email único, CPF único, tipo válido)
 - Edição via `/dashboard/usuarios/[id]/editar` (atualização seletiva de campos)
 
+### Privacidade de CPF
+Para atender requisitos de privacidade e LGPD, o CPF é **mascarado** em todas as exibições onde não há intenção de edição direta. Na listagem de usuários, o CPF aparece como `123.***.***-45` preservando apenas os 3 primeiros e os 2 últimos dígitos. O valor completo só é exibido dentro dos formulários de criação e edição do usuário.
+
+Implementação:
+- Função `mascararCPF(cpf)` em `src/lib/validators.ts`
+- Uso aplicado em `src/app/dashboard/usuarios/page.tsx`
+- Teste automatizado em `src/lib/__tests__/cpf.test.ts`
+
+Caso seja necessário ocultar também em outros contextos (logs, exportações), recomenda-se reutilizar esta função antes de serializar os dados.
 ### 4. API de Usuários
 - `GET /api/usuarios` (ADMIN) lista usuários
 - `POST /api/usuarios` (ADMIN) cria usuários com hash bcrypt

@@ -43,8 +43,8 @@ lint:
 
 format:
 	@echo "✨ Formatando código..."
-	@$(NPM) exec @biomejs/biome format --write .
-	@$(NPM) exec @biomejs/biome lint --apply .
+	@npx @biomejs/biome format --write .
+	@npx @biomejs/biome check --write .
 
 clean:
 	@echo "🧹 Limpando arquivos de build e dependências..."
@@ -69,3 +69,8 @@ next-build:
 	@echo "🔧 Construindo Next.js..."
 	@$(NPM) exec next build
 	@echo "✅ Next.js construído com sucesso!"
+
+biome-check:
+	@echo "🔧 Verificando código com Biome..."
+	@$(NPM) exec @biomejs/biome lint .
+	@echo "✅ Verificação concluída!"
