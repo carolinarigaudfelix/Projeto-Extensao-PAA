@@ -56,7 +56,7 @@ src/
 - Listagem de estudantes
 - Cadastro e edição
 - Visualização de detalhes
-- Suporte a necessidades especiais
+- Suporte a necessidades específicas
 - Filtros e busca
  - Formulário de criação em `/dashboard/alunos/novo`
 
@@ -75,7 +75,7 @@ src/
 ### Estudante
 - Informações pessoais (nome, idade, matrícula, email, telefone)
 - Informações acadêmicas (ano escolar, turma, curso)
-- Suporte a necessidades especiais
+- Suporte a necessidades específicas
 - Campos de auditoria (criado, atualizado, ativo)
 
 ### MembroPedagogico

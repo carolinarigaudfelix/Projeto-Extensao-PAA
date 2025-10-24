@@ -55,7 +55,7 @@ interface EquipeMembro {
 }
 
 interface WizardExtra {
-  apoioEducacional: string[]; // sala de recurso, agente apoio, biotecnologia, outros
+  apoioEducacional: string[]; // sala de recurso, agente apoio, outros
   apoioOutros: string;
   equipePedagogica: EquipeMembro[];
   objetivosAvaliacao: string;
@@ -398,23 +398,20 @@ export default function NovoAlunoPage() {
           Apoio Educacional
         </Typography>
         <Box display="flex" flexDirection="column" gap={0.5}>
-          {[
-            'Sala de recurso',
-            'Agente de apoio à inclusão',
-            'Biotecnologia',
-            'Outros',
-          ].map((op) => (
-            <FormControlLabel
-              key={op}
-              control={
-                <Checkbox
-                  checked={form.apoioEducacional.includes(op)}
-                  onChange={() => toggleApoio(op)}
-                />
-              }
-              label={op}
-            />
-          ))}
+          {['Sala de recurso', 'Agente de apoio à inclusão', 'Outros'].map(
+            (op) => (
+              <FormControlLabel
+                key={op}
+                control={
+                  <Checkbox
+                    checked={form.apoioEducacional.includes(op)}
+                    onChange={() => toggleApoio(op)}
+                  />
+                }
+                label={op}
+              />
+            ),
+          )}
         </Box>
         {form.apoioEducacional.includes('Outros') && (
           <TextField
@@ -701,7 +698,7 @@ export default function NovoAlunoPage() {
         </CardContent>
       </Card>
 
-      {/* Necessidades Especiais */}
+      {/* Necessidades Específicas */}
       <Card variant="outlined">
         <CardContent>
           <Typography
@@ -710,10 +707,10 @@ export default function NovoAlunoPage() {
             color="primary"
             gutterBottom
           >
-            ♿ Necessidades Especiais
+            ♿ Necessidades Específicas
           </Typography>
           <Typography variant="body2">
-            <strong>Possui necessidades especiais:</strong>{' '}
+            <strong>Possui necessidades específicas:</strong>{' '}
             {form.isSpecialNeeds ? 'Sim' : 'Não'}
           </Typography>
           {form.isSpecialNeeds && form.specialNeedsDetails && (

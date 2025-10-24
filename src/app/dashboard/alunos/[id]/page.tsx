@@ -3,6 +3,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -34,6 +35,7 @@ interface Avaliacao {
   evolucao?: string;
   dificuldades?: string;
   periodoReavaliacao?: number;
+  status?: 'DRAFT' | 'FINAL';
   avaliador?: {
     nome: string;
     cargo: string;
@@ -253,15 +255,15 @@ export default function DetalheAlunoPage() {
       <Card sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Necessidades Especiais
+            Necessidades Específicas
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Box mb={2}>
             <Chip
               label={
                 aluno.isSpecialNeeds
-                  ? 'Possui necessidades especiais'
-                  : 'Não possui necessidades especiais'
+                  ? 'Possui necessidades específicas'
+                  : 'Não possui necessidades específicas'
               }
               color={aluno.isSpecialNeeds ? 'warning' : 'default'}
               variant={aluno.isSpecialNeeds ? 'filled' : 'outlined'}
@@ -468,6 +470,29 @@ export default function DetalheAlunoPage() {
             </Button>
           </Box>
           <Divider sx={{ mb: 2 }} />
+          {/* Aviso de reavaliações vencidas */}
+          {!loadingAvaliacoes &&
+            avaliacoes.length > 0 &&
+            (() => {
+              const overdueCount = avaliacoes.reduce((acc, av) => {
+                if (av.periodoReavaliacao && av.data) {
+                  const prox = new Date(av.data);
+                  prox.setDate(prox.getDate() + av.periodoReavaliacao);
+                  if (prox < new Date()) return acc + 1;
+                }
+                return acc;
+              }, 0);
+              if (overdueCount > 0) {
+                return (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    {overdueCount === 1
+                      ? '1 reavaliação vencida. Considere priorizar a atualização.'
+                      : `${overdueCount} reavaliações vencidas. Considere priorizar a atualização.`}
+                  </Alert>
+                );
+              }
+              return null;
+            })()}
           {loadingAvaliacoes ? (
             <Box display="flex" justifyContent="center" p={3}>
               <Skeleton variant="rectangular" width="100%" height={200} />
@@ -498,19 +523,31 @@ export default function DetalheAlunoPage() {
                     <TableCell>Evolução</TableCell>
                     <TableCell>Dificuldades</TableCell>
                     <TableCell>Próxima Reavaliação</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="center">Ações</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {avaliacoes.map((av) => {
                     let proximaData = '-';
+                    let isOverdue = false;
                     if (av.periodoReavaliacao && av.data) {
                       const prox = new Date(av.data);
                       prox.setDate(prox.getDate() + av.periodoReavaliacao);
                       proximaData = prox.toLocaleDateString('pt-BR');
+                      isOverdue = prox < new Date();
                     }
 
                     return (
-                      <TableRow key={av.id}>
+                      <TableRow
+                        key={av.id}
+                        sx={{
+                          bgcolor: isOverdue ? 'error.lighter' : 'inherit',
+                          '&:hover': {
+                            bgcolor: isOverdue ? 'error.light' : 'action.hover',
+                          },
+                        }}
+                      >
                         <TableCell>
                           {new Date(av.data).toLocaleDateString('pt-BR')}
                         </TableCell>
@@ -577,18 +614,44 @@ export default function DetalheAlunoPage() {
                           <Chip
                             label={proximaData}
                             size="small"
-                            color={
-                              proximaData !== '-' &&
-                              new Date(
-                                proximaData.split('/').reverse().join('-'),
-                              ) < new Date()
-                                ? 'error'
-                                : 'default'
-                            }
+                            color={isOverdue ? 'error' : 'default'}
                             variant={
                               proximaData !== '-' ? 'filled' : 'outlined'
                             }
                           />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={
+                              av.status === 'FINAL' ? 'Finalizada' : 'Rascunho'
+                            }
+                            size="small"
+                            color={
+                              av.status === 'FINAL' ? 'success' : 'warning'
+                            }
+                            variant={
+                              av.status === 'FINAL' ? 'filled' : 'outlined'
+                            }
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <span
+                            title={
+                              av.status === 'FINAL'
+                                ? ''
+                                : 'Somente avaliações finalizadas podem ser impressas.'
+                            }
+                          >
+                            <Button
+                              component={NextLink}
+                              href={`/dashboard/avaliacoes/${av.id}/imprimir`}
+                              size="small"
+                              variant="outlined"
+                              disabled={av.status !== 'FINAL'}
+                            >
+                              Imprimir
+                            </Button>
+                          </span>
                         </TableCell>
                       </TableRow>
                     );

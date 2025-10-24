@@ -17,6 +17,12 @@ enum TipoUsuario {
   PEDAGOGO
 }
 
+// Status da avaliação
+enum AvaliacaoStatus {
+  DRAFT
+  FINAL
+}
+
 // 3. Define o "Modelo" do Estudante
 model Estudante {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -39,7 +45,7 @@ model Estudante {
   turma         String?
   curso         String?
 
-  // Necessidades especiais
+  // Necessidades específicas
   isSpecialNeeds      Boolean @default(false)
   specialNeedsDetails String?
 
@@ -118,6 +124,7 @@ model Avaliacao {
   isActive      Boolean  @default(true)
 
   // Conteúdo da avaliação
+  status             AvaliacaoStatus @default(DRAFT)
   data               DateTime
   descricao          String
   evolucao           String?

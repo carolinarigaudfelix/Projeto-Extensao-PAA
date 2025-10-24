@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       alunosAtivos,
       totalUsuarios,
       usuariosPorTipo,
-      alunosComNecessidadesEspeciais,
+      alunosComNecessidadesEspecificas,
       alunosRecentesCount,
     ] = await Promise.all([
       // Total de alunos
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         where: { isActive: true },
       }),
 
-      // Alunos com necessidades especiais
+      // Alunos com necessidades específicas
       prisma.estudante.count({
         where: {
           isActive: true,
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       alunos: {
         total: totalAlunos,
         ativos: alunosAtivos,
-        comNecessidadesEspeciais: alunosComNecessidadesEspeciais,
+        comNecessidadesEspecificas: alunosComNecessidadesEspecificas,
         cadastradosRecentemente: alunosRecentesCount,
       },
       usuarios: {

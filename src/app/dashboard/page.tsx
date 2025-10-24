@@ -31,7 +31,7 @@ interface DashboardStats {
   alunos: {
     total: number;
     ativos: number;
-    comNecessidadesEspeciais: number;
+    comNecessidadesEspecificas: number;
     cadastradosRecentemente: number;
   };
   usuarios: {
@@ -266,7 +266,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Card: Necessidades Especiais */}
+        {/* Card: Necessidades Específicas */}
         <Card
           elevation={2}
           sx={{
@@ -294,7 +294,7 @@ export default function DashboardPage() {
             }
             title={
               <Typography variant="subtitle2" color="text.secondary">
-                Necessidades Especiais
+                Necessidades Específicas
               </Typography>
             }
             sx={{ pb: 0 }}
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                   fontSize: { xs: '2rem', sm: '2.5rem' },
                 }}
               >
-                {stats?.alunos.comNecessidadesEspeciais ?? 0}
+                {stats?.alunos.comNecessidadesEspecificas ?? 0}
               </Typography>
             )}
           </CardContent>
