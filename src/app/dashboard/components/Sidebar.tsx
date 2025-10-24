@@ -1,6 +1,8 @@
 "use client";
 
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -62,10 +64,20 @@ const navigation: NavItem[] = [
 interface SidebarProps {
   mobileOpen: boolean;
   onClose: () => void;
+  desktopCollapsed: boolean;
+  onDesktopToggle: () => void;
   width: number;
+  widthCollapsed: number;
 }
 
-export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
+export function Sidebar({
+  mobileOpen,
+  onClose,
+  desktopCollapsed,
+  onDesktopToggle,
+  width,
+  widthCollapsed,
+}: SidebarProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const theme = useTheme();
@@ -81,12 +93,34 @@ export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
         .join("")
     : "?";
 
-  const drawerContent = (
+  const drawerContent = (isCollapsed: boolean) => (
     <>
-      <Box sx={{ px: 2, py: 2 }}>
-        <Typography variant="h6" fontWeight={600}>
-          PAA Dashboard
-        </Typography>
+      <Box
+        sx={{
+          px: 2,
+          py: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {!isCollapsed && (
+          <Typography variant="h6" fontWeight={600}>
+            PAA Dashboard
+          </Typography>
+        )}
+        {!isMobile && (
+          <IconButton
+            onClick={onDesktopToggle}
+            size="small"
+            sx={{
+              color: "inherit",
+              ml: isCollapsed ? 0 : "auto",
+            }}
+          >
+            {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        )}
       </Box>
       <Divider sx={{ borderColor: theme.palette.grey[800] }} />
       <Box sx={{ flex: 1, overflowY: "auto" }}>
@@ -97,41 +131,64 @@ export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
               const active = pathname === item.href;
               return (
                 <ListItem key={item.href} disablePadding>
-                  <ListItemButton
-                    component={NextLink}
-                    href={item.href}
-                    selected={active}
-                    onClick={isMobile ? onClose : undefined}
-                    sx={{
-                      py: 1,
-                      "&.Mui-selected": {
-                        bgcolor: `${theme.palette.primary.main}20`,
-                        borderRight: `3px solid ${theme.palette.primary.main}`,
-                        "&:hover": {
-                          bgcolor: `${theme.palette.primary.main}30`,
-                        },
-                      },
-                      "&:hover": { bgcolor: theme.palette.grey[800] },
-                    }}
+                  <Tooltip
+                    title={isCollapsed ? item.name : ""}
+                    placement="right"
+                    arrow
                   >
-                    <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.name}
-                      primaryTypographyProps={{
-                        fontSize: 14,
-                        fontWeight: active ? 600 : 500,
+                    <ListItemButton
+                      component={NextLink}
+                      href={item.href}
+                      selected={active}
+                      onClick={isMobile ? onClose : undefined}
+                      sx={{
+                        py: 1,
+                        justifyContent: isCollapsed ? "center" : "flex-start",
+                        "&.Mui-selected": {
+                          bgcolor: `${theme.palette.primary.main}20`,
+                          borderRight: `3px solid ${theme.palette.primary.main}`,
+                          "&:hover": {
+                            bgcolor: `${theme.palette.primary.main}30`,
+                          },
+                        },
+                        "&:hover": { bgcolor: theme.palette.grey[800] },
                       }}
-                    />
-                  </ListItemButton>
+                    >
+                      <ListItemIcon
+                        sx={{
+                          color: "inherit",
+                          minWidth: isCollapsed ? "auto" : 36,
+                          justifyContent: "center",
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      {!isCollapsed && (
+                        <ListItemText
+                          primary={item.name}
+                          primaryTypographyProps={{
+                            fontSize: 14,
+                            fontWeight: active ? 600 : 500,
+                          }}
+                        />
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
                 </ListItem>
               );
             })}
         </List>
       </Box>
       <Divider sx={{ borderColor: theme.palette.grey[800] }} />
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          flexDirection: isCollapsed ? "column" : "row",
+        }}
+      >
         <Avatar
           sx={{
             bgcolor: theme.palette.primary.main,
@@ -142,29 +199,49 @@ export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
         >
           {initials}
         </Avatar>
-        <Box flex={1} minWidth={0}>
-          <Typography variant="body2" fontWeight={600} noWrap>
-            {session.user.nome || "Usuário sem nome"}
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.7 }} noWrap>
-            {session.user.tipo}
-          </Typography>
-        </Box>
-        <Tooltip title="Sair">
-          <IconButton
-            size="small"
-            onClick={() => signOut()}
-            sx={{ color: "inherit" }}
-          >
-            <LogoutOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {!isCollapsed && (
+          <>
+            <Box flex={1} minWidth={0}>
+              <Typography variant="body2" fontWeight={600} noWrap>
+                {session.user.nome || "Usuário sem nome"}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.7 }} noWrap>
+                {session.user.tipo}
+              </Typography>
+            </Box>
+            <Tooltip title="Sair">
+              <IconButton
+                size="small"
+                onClick={() => signOut()}
+                sx={{ color: "inherit" }}
+              >
+                <LogoutOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+        {isCollapsed && (
+          <Tooltip title="Sair">
+            <IconButton
+              size="small"
+              onClick={() => signOut()}
+              sx={{ color: "inherit" }}
+            >
+              <LogoutOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     </>
   );
 
+  const currentWidth = desktopCollapsed ? widthCollapsed : width;
+
   return (
-    <Box component="nav" sx={{ width: { md: width }, flexShrink: { md: 0 } }}>
+    <Box
+      component="nav"
+      sx={{ width: { md: currentWidth }, flexShrink: { md: 0 } }}
+    >
       {/* Drawer temporário para mobile */}
       <Drawer
         variant="temporary"
@@ -184,24 +261,29 @@ export function Sidebar({ mobileOpen, onClose, width }: SidebarProps) {
           },
         }}
       >
-        {drawerContent}
+        {drawerContent(false)}
       </Drawer>
 
-      {/* Drawer permanente para desktop */}
+      {/* Drawer permanente retrátil para desktop */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: "none", md: "block" },
           "& .MuiDrawer-paper": {
-            width,
+            width: currentWidth,
             bgcolor: theme.palette.grey[900],
             color: theme.palette.grey[100],
             display: "flex",
             flexDirection: "column",
+            overflowX: "hidden",
+            transition: theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
           },
         }}
       >
-        {drawerContent}
+        {drawerContent(desktopCollapsed)}
       </Drawer>
     </Box>
   );

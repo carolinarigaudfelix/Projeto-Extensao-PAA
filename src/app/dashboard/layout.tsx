@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { Box } from '@mui/material';
-import { useState } from 'react';
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
+import { Box } from "@mui/material";
+import { useState } from "react";
+import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
 
-// Largura do Drawer definida em Sidebar (240)
+// Largura do Drawer expandido e colapsado
 const SIDEBAR_WIDTH = 240;
+const SIDEBAR_WIDTH_COLLAPSED = 64;
 
 export default function DashboardLayout({
   children,
@@ -14,24 +15,36 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleDesktopToggle = () => {
+    setDesktopCollapsed(!desktopCollapsed);
+  };
+
+  const currentWidth = desktopCollapsed
+    ? SIDEBAR_WIDTH_COLLAPSED
+    : SIDEBAR_WIDTH;
+
   return (
     <Box
       sx={{
-        display: 'flex',
-        minHeight: '100dvh',
+        display: "flex",
+        minHeight: "100dvh",
         bgcolor: (theme) => theme.palette.background.default,
       }}
     >
-      {/* Sidebar: drawer temporário em mobile, permanente em desktop */}
+      {/* Sidebar: drawer temporário em mobile, permanente retrátil em desktop */}
       <Sidebar
         mobileOpen={mobileOpen}
         onClose={handleDrawerToggle}
+        desktopCollapsed={desktopCollapsed}
+        onDesktopToggle={handleDesktopToggle}
         width={SIDEBAR_WIDTH}
+        widthCollapsed={SIDEBAR_WIDTH_COLLAPSED}
       />
 
       {/* Conteúdo principal */}
@@ -39,10 +52,15 @@ export default function DashboardLayout({
         component="div"
         sx={{
           flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
-          width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
+          display: "flex",
+          flexDirection: "column",
+          ml: { xs: 0, md: `${currentWidth}px` },
+          width: { xs: "100%", md: `calc(100% - ${currentWidth}px)` },
+          transition: (theme) =>
+            theme.transitions.create(["margin", "width"], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
         }}
       >
         <Header onToggleSidebar={handleDrawerToggle} />
@@ -51,7 +69,7 @@ export default function DashboardLayout({
           sx={{
             p: { xs: 2, sm: 3 },
             flex: 1,
-            overflow: 'auto',
+            overflow: "auto",
           }}
         >
           {children}
