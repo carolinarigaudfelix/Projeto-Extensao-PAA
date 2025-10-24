@@ -1,11 +1,13 @@
 "use client";
 
 import type { AvaliacaoResumo, Estudante } from "@/types/estudante";
+import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Paper,
   Table,
@@ -16,6 +18,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 export default function AvaliacoesPage() {
@@ -28,7 +31,7 @@ export default function AvaliacoesPage() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/alunos?includeInactive=true");
+        const res = await fetch("/api/alunos?includeInactive=false");
         if (!res.ok) throw new Error("Falha ao buscar alunos");
         const data = await res.json();
         setAlunos(data);
@@ -43,11 +46,35 @@ export default function AvaliacoesPage() {
 
   return (
     <Box p={2}>
-      <Typography variant="h4" fontWeight={600} gutterBottom>
-        Situação dos Alunos
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Box>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
+            Situação dos Alunos
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Acompanhamento de avaliações e próximas reavaliações
+          </Typography>
+        </Box>
+        <Button
+          component={NextLink}
+          href="/dashboard/avaliacoes/novo"
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+        >
+          Nova Avaliação
+        </Button>
+      </Box>
+
       {loading ? (
-        <CircularProgress />
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <Card variant="outlined" sx={{ mb: 2, borderColor: "error.light" }}>
           <CardContent>
@@ -70,10 +97,6 @@ export default function AvaliacoesPage() {
                 <TableCell>Evolução</TableCell>
                 <TableCell>Dificuldades</TableCell>
                 <TableCell>Próxima Reavaliação</TableCell>
-                <TableCell>Criado em</TableCell>
-                <TableCell>Criado por</TableCell>
-                <TableCell>Atualizado em</TableCell>
-                <TableCell>Atualizado por</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="center">Ações</TableCell>
               </TableRow>
@@ -81,8 +104,12 @@ export default function AvaliacoesPage() {
             <TableBody>
               {alunos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} align="center">
-                    Nenhum aluno encontrado.
+                  <TableCell colSpan={8} align="center">
+                    <Box py={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Nenhum aluno encontrado.
+                      </Typography>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -98,46 +125,85 @@ export default function AvaliacoesPage() {
                       ? aluno.avaliacoes[0]
                       : null;
                   let proxima = "-";
+                  let isVencida = false;
                   if (ultima?.periodoReavaliacao && ultima?.data) {
                     const prox = new Date(ultima.data);
                     prox.setDate(
                       prox.getDate() + (ultima.periodoReavaliacao || 0)
                     );
-                    proxima = prox.toLocaleDateString();
+                    proxima = prox.toLocaleDateString("pt-BR");
+                    isVencida = prox < new Date();
                   }
                   return (
                     <TableRow key={aluno.id}>
-                      <TableCell>{aluno.nome}</TableCell>
+                      <TableCell>
+                        <Button
+                          component={NextLink}
+                          href={`/dashboard/alunos/${aluno.id}`}
+                          variant="text"
+                          size="small"
+                          sx={{ textTransform: "none" }}
+                        >
+                          {aluno.nome}
+                        </Button>
+                      </TableCell>
                       <TableCell>{aluno.matricula}</TableCell>
                       <TableCell>
                         {ultima
-                          ? new Date(ultima.data).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>{ultima?.evolucao || "-"}</TableCell>
-                      <TableCell>{ultima?.dificuldades || "-"}</TableCell>
-                      <TableCell>{proxima}</TableCell>
-                      <TableCell>
-                        {aluno.criado
-                          ? new Date(aluno.criado).toLocaleString()
+                          ? new Date(ultima.data).toLocaleDateString("pt-BR")
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        {aluno.criadoPorNome || aluno.criadoPor || "-"}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            maxWidth: 200,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                          title={ultima?.evolucao || "-"}
+                        >
+                          {ultima?.evolucao || "-"}
+                        </Typography>
                       </TableCell>
                       <TableCell>
-                        {aluno.atualizado
-                          ? new Date(aluno.atualizado).toLocaleString()
-                          : "-"}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            maxWidth: 200,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                          title={ultima?.dificuldades || "-"}
+                        >
+                          {ultima?.dificuldades || "-"}
+                        </Typography>
                       </TableCell>
                       <TableCell>
-                        {aluno.atualizadoPorNome || aluno.atualizadoPor || "-"}
+                        {proxima !== "-" ? (
+                          <Chip
+                            label={proxima}
+                            size="small"
+                            color={isVencida ? "error" : "success"}
+                            variant="filled"
+                          />
+                        ) : (
+                          "-"
+                        )}
                       </TableCell>
                       <TableCell>
-                        {aluno.isActive ? "Ativo" : "Inativo"}
+                        <Chip
+                          label={aluno.isActive ? "Ativo" : "Inativo"}
+                          size="small"
+                          color={aluno.isActive ? "success" : "default"}
+                          variant="outlined"
+                        />
                       </TableCell>
                       <TableCell align="center">
                         <Button
+                          component={NextLink}
                           variant="outlined"
                           size="small"
                           href={`/dashboard/avaliacoes/novo?aluno=${aluno.id}`}

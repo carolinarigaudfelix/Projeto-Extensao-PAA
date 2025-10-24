@@ -2,6 +2,7 @@
 
 import { useRoleGuard } from "@/lib/route-guard";
 import type { Estudante } from "@/types/estudante";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
@@ -26,6 +27,19 @@ import NextLink from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface Avaliacao {
+  id: string;
+  data: string;
+  descricao: string;
+  evolucao?: string;
+  dificuldades?: string;
+  periodoReavaliacao?: number;
+  avaliador?: {
+    nome: string;
+    cargo: string;
+  };
+}
+
 export default function DetalheAlunoPage() {
   const {
     isLoading: authLoading,
@@ -39,6 +53,8 @@ export default function DetalheAlunoPage() {
   const [loading, setLoading] = useState(true);
   const [aluno, setAluno] = useState<Estudante | null>(null);
   const [error, setError] = useState("");
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
+  const [loadingAvaliacoes, setLoadingAvaliacoes] = useState(true);
 
   useEffect(() => {
     if (!hasRole) return;
@@ -61,7 +77,22 @@ export default function DetalheAlunoPage() {
       }
     }
 
+    async function loadAvaliacoes() {
+      try {
+        const res = await fetch(`/api/avaliacoes/aluno/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvaliacoes(data);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar avaliações:", e);
+      } finally {
+        setLoadingAvaliacoes(false);
+      }
+    }
+
     loadAluno();
+    loadAvaliacoes();
   }, [id, hasRole]);
 
   if (authLoading)
@@ -412,6 +443,162 @@ export default function DetalheAlunoPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Avaliações */}
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h6">
+              Avaliações ({avaliacoes.length})
+            </Typography>
+            <Button
+              component={NextLink}
+              href={`/dashboard/avaliacoes/novo?aluno=${id}`}
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Nova Avaliação
+            </Button>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+          {loadingAvaliacoes ? (
+            <Box display="flex" justifyContent="center" p={3}>
+              <Skeleton variant="rectangular" width="100%" height={200} />
+            </Box>
+          ) : avaliacoes.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography variant="body2" color="text.secondary">
+                Nenhuma avaliação registrada para este aluno.
+              </Typography>
+              <Button
+                component={NextLink}
+                href={`/dashboard/avaliacoes/novo?aluno=${id}`}
+                variant="outlined"
+                color="primary"
+                sx={{ mt: 2 }}
+              >
+                Registrar primeira avaliação
+              </Button>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Data</TableCell>
+                    <TableCell>Avaliador</TableCell>
+                    <TableCell>Descrição</TableCell>
+                    <TableCell>Evolução</TableCell>
+                    <TableCell>Dificuldades</TableCell>
+                    <TableCell>Próxima Reavaliação</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {avaliacoes.map((av) => {
+                    let proximaData = "-";
+                    if (av.periodoReavaliacao && av.data) {
+                      const prox = new Date(av.data);
+                      prox.setDate(prox.getDate() + av.periodoReavaliacao);
+                      proximaData = prox.toLocaleDateString("pt-BR");
+                    }
+
+                    return (
+                      <TableRow key={av.id}>
+                        <TableCell>
+                          {new Date(av.data).toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell>
+                          {av.avaliador ? (
+                            <Box>
+                              <Typography variant="body2">
+                                {av.avaliador.nome}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {av.avaliador.cargo}
+                              </Typography>
+                            </Box>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              maxWidth: 300,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                            title={av.descricao}
+                          >
+                            {av.descricao}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              maxWidth: 200,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                            title={av.evolucao || "-"}
+                          >
+                            {av.evolucao || "-"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              maxWidth: 200,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                            title={av.dificuldades || "-"}
+                          >
+                            {av.dificuldades || "-"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={proximaData}
+                            size="small"
+                            color={
+                              proximaData !== "-" &&
+                              new Date(
+                                proximaData.split("/").reverse().join("-")
+                              ) < new Date()
+                                ? "error"
+                                : "default"
+                            }
+                            variant={
+                              proximaData !== "-" ? "filled" : "outlined"
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
     </Container>
   );
 }
