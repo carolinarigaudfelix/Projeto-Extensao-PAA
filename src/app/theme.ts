@@ -1,40 +1,40 @@
-"use client";
+'use client';
 
-import { createTheme } from "@mui/material/styles";
+import { createTheme } from '@mui/material/styles';
 
 // Paleta de cores do sistema
 export const colors = {
   primary: {
-    main: "#0DAF6E",
-    light: "#5FD69F",
-    dark: "#088D57",
-    contrastText: "#FFFFFF",
+    main: '#0DAF6E',
+    light: '#5FD69F',
+    dark: '#088D57',
+    contrastText: '#FFFFFF',
   },
   secondary: {
-    main: "#3B82F6",
-    light: "#60A5FA",
-    dark: "#2563EB",
-    contrastText: "#FFFFFF",
+    main: '#3B82F6',
+    light: '#60A5FA',
+    dark: '#2563EB',
+    contrastText: '#FFFFFF',
   },
   success: {
-    main: "#0DAF6E",
-    light: "#5FD69F",
-    dark: "#088D57",
+    main: '#0DAF6E',
+    light: '#5FD69F',
+    dark: '#088D57',
   },
   info: {
-    main: "#3B82F6",
-    light: "#60A5FA",
-    dark: "#2563EB",
+    main: '#3B82F6',
+    light: '#60A5FA',
+    dark: '#2563EB',
   },
   warning: {
-    main: "#F59E0B",
-    light: "#FBBF24",
-    dark: "#D97706",
+    main: '#F59E0B',
+    light: '#FBBF24',
+    dark: '#D97706',
   },
   error: {
-    main: "#EF4444",
-    light: "#F87171",
-    dark: "#DC2626",
+    main: '#EF4444',
+    light: '#F87171',
+    dark: '#DC2626',
   },
 };
 
@@ -76,14 +76,14 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
+      '-apple-system',
+      'BlinkMacSystemFont',
       '"Segoe UI"',
-      "Roboto",
+      'Roboto',
       '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-    ].join(","),
+      'Arial',
+      'sans-serif',
+    ].join(','),
     h1: {
       fontWeight: 700,
     },
@@ -103,7 +103,7 @@ export const theme = createTheme({
       fontWeight: 600,
     },
     button: {
-      textTransform: "none",
+      textTransform: 'none',
       fontWeight: 600,
     },
   },
@@ -112,20 +112,20 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
-          padding: "10px 24px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "0 4px 12px rgba(13, 175, 110, 0.25)",
+          padding: '10px 24px',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 4px 12px rgba(13, 175, 110, 0.25)',
           },
         },
         contained: {
-          "&:hover": {
-            boxShadow: "0 4px 12px rgba(13, 175, 110, 0.35)",
+          '&:hover': {
+            boxShadow: '0 4px 12px rgba(13, 175, 110, 0.35)',
           },
         },
         outlined: {
           borderWidth: 2,
-          "&:hover": {
+          '&:hover': {
             borderWidth: 2,
           },
         },
@@ -135,7 +135,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         },
       },
     },
@@ -145,18 +145,18 @@ export const theme = createTheme({
           borderRadius: 12,
         },
         elevation1: {
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         },
         elevation2: {
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         },
       },
     },
     MuiTextField: {
       styleOverrides: {
         root: {
-          "& .MuiOutlinedInput-root": {
-            "&.Mui-focused fieldset": {
+          '& .MuiOutlinedInput-root': {
+            '&.Mui-focused fieldset': {
               borderColor: colors.primary.main,
               borderWidth: 2,
             },
@@ -182,7 +182,7 @@ export const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          "&:hover": {
+          '&:hover': {
             backgroundColor: `${colors.primary.main}15`,
           },
         },

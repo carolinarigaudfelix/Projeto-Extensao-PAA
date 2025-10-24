@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Buscando todas as avaliações...");
+  console.log('Buscando todas as avaliações...');
 
   const avaliacoes = await prisma.avaliacao.findMany({
     select: {
@@ -24,17 +24,17 @@ async function main() {
 
   // Encontrar avaliações órfãs (sem avaliador válido)
   const avaliacoesOrfas = avaliacoes.filter(
-    (a) => !(a.avaliadorId && membrosIds.has(a.avaliadorId))
+    (a) => !(a.avaliadorId && membrosIds.has(a.avaliadorId)),
   );
 
   console.log(`Avaliações órfãs encontradas: ${avaliacoesOrfas.length}`);
 
   if (avaliacoesOrfas.length > 0) {
     console.log(
-      "IDs das avaliações órfãs:",
-      avaliacoesOrfas.map((a) => a.id)
+      'IDs das avaliações órfãs:',
+      avaliacoesOrfas.map((a) => a.id),
     );
-    console.log("Deletando avaliações órfãs...");
+    console.log('Deletando avaliações órfãs...');
     const result = await prisma.avaliacao.deleteMany({
       where: {
         id: { in: avaliacoesOrfas.map((a) => a.id) },
@@ -43,12 +43,12 @@ async function main() {
     console.log(`${result.count} avaliações deletadas.`);
   }
 
-  console.log("Processo concluído!");
+  console.log('Processo concluído!');
 }
 
 main()
   .catch((e) => {
-    console.error("Erro:", e);
+    console.error('Erro:', e);
     process.exit(1);
   })
   .finally(async () => {

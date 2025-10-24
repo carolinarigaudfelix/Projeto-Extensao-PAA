@@ -1,7 +1,7 @@
-import prisma from "../src/lib/prisma";
+import prisma from '../src/lib/prisma';
 
 async function main() {
-  console.log("🔄 Ativando todos os usuários...\n");
+  console.log('🔄 Ativando todos os usuários...\n');
 
   const result = await prisma.usuario.updateMany({
     where: { isActive: false },
@@ -20,12 +20,12 @@ async function main() {
     },
   });
 
-  console.log("📋 Status atual dos usuários:\n");
+  console.log('📋 Status atual dos usuários:\n');
   for (const user of usuarios) {
     console.log(
-      `  ${user.isActive ? "✅" : "❌"} ${user.nome} (${user.email}) - ${
+      `  ${user.isActive ? '✅' : '❌'} ${user.nome} (${user.email}) - ${
         user.tipo
-      }`
+      }`,
     );
   }
 
@@ -33,6 +33,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("❌ Erro ao ativar usuários:", error);
+  console.error('❌ Erro ao ativar usuários:', error);
   process.exit(1);
 });

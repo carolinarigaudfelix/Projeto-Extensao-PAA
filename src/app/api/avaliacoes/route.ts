@@ -13,8 +13,8 @@ export async function POST(req: Request) {
 
     if (!(estudanteId && avaliadorId && data && descricao)) {
       return NextResponse.json(
-        { message: "Campos obrigatórios faltando." },
-        { status: 400 }
+        { message: 'Campos obrigatórios faltando.' },
+        { status: 400 },
       );
     }
 
@@ -30,27 +30,27 @@ export async function POST(req: Request) {
           ? Number(periodoReavaliacao)
           : null,
         criado: new Date(),
-        criadoPor: "sistema",
-        atualizadoPor: "sistema",
+        criadoPor: 'sistema',
+        atualizadoPor: 'sistema',
       },
     });
     return NextResponse.json(avaliacao, { status: 201 });
   } catch (e) {
     return NextResponse.json(
-      { message: "Erro ao criar avaliação." },
-      { status: 500 }
+      { message: 'Erro ao criar avaliação.' },
+      { status: 500 },
     );
   }
 }
 
-import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
     // Busca as avaliações mais recentes de todos os alunos, incluindo evolução, dificuldades, recorrência e dados do estudante
     const avaliacoes = await prisma.avaliacao.findMany({
-      orderBy: { data: "desc" },
+      orderBy: { data: 'desc' },
       take: 50,
       include: {
         avaliador: {
@@ -64,8 +64,8 @@ export async function GET() {
     return NextResponse.json(avaliacoes);
   } catch {
     return NextResponse.json(
-      { message: "Erro ao buscar avaliações." },
-      { status: 500 }
+      { message: 'Erro ao buscar avaliações.' },
+      { status: 500 },
     );
   }
 }

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import SchoolIcon from "@mui/icons-material/School";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import SchoolIcon from '@mui/icons-material/School';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import {
   Alert,
   Box,
@@ -23,9 +23,9 @@ import {
   Tooltip,
   Typography,
   useTheme,
-} from "@mui/material";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+} from '@mui/material';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DashboardStats {
   alunos: {
@@ -52,15 +52,15 @@ export default function DashboardPage() {
     setStats(null);
 
     try {
-      const res = await fetch("/api/dashboard/stats");
+      const res = await fetch('/api/dashboard/stats');
       if (!res.ok) {
         throw new Error(`Erro ao carregar estatísticas: ${res.statusText}`);
       }
       const data: DashboardStats = await res.json();
       setStats(data);
     } catch (err) {
-      console.error("Erro ao carregar estatísticas:", err);
-      setErro(err instanceof Error ? err.message : "Erro desconhecido");
+      console.error('Erro ao carregar estatísticas:', err);
+      setErro(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
       setLoading(false);
     }
@@ -78,11 +78,11 @@ export default function DashboardPage() {
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: { xs: 3, sm: 4 },
-          flexWrap: "wrap",
+          flexWrap: 'wrap',
           gap: 2,
         }}
       >
@@ -91,7 +91,7 @@ export default function DashboardPage() {
           sx={{
             fontWeight: 600,
             color: primaryColor,
-            fontSize: { xs: "1.75rem", sm: "2rem", md: "2.125rem" },
+            fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' },
           }}
         >
           Dashboard
@@ -101,8 +101,8 @@ export default function DashboardPage() {
             onClick={carregarEstatisticas}
             sx={{
               bgcolor: primaryColor,
-              color: "white",
-              "&:hover": {
+              color: 'white',
+              '&:hover': {
                 bgcolor: primaryDark,
               },
             }}
@@ -120,12 +120,12 @@ export default function DashboardPage() {
 
       <Box
         sx={{
-          display: "grid",
+          display: 'grid',
           gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(2, 1fr)",
-            lg: "repeat(4, 1fr)",
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
           },
           gap: { xs: 2, sm: 2.5, md: 3 },
           mb: { xs: 3, sm: 4 },
@@ -135,9 +135,9 @@ export default function DashboardPage() {
         <Card
           elevation={2}
           sx={{
-            transition: "transform 0.2s, box-shadow 0.2s",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: 4,
             },
           }}
@@ -147,11 +147,11 @@ export default function DashboardPage() {
               <Box
                 sx={{
                   bgcolor: `${primaryColor}15`,
-                  borderRadius: "50%",
+                  borderRadius: '50%',
                   p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <PeopleAltOutlinedIcon sx={{ color: primaryColor }} />
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                 sx={{
                   fontWeight: 700,
                   color: primaryColor,
-                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  fontSize: { xs: '2rem', sm: '2.5rem' },
                 }}
               >
                 {stats?.alunos.total ?? 0}
@@ -187,9 +187,9 @@ export default function DashboardPage() {
         <Card
           elevation={2}
           sx={{
-            transition: "transform 0.2s, box-shadow 0.2s",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: 4,
             },
           }}
@@ -199,11 +199,11 @@ export default function DashboardPage() {
               <Box
                 sx={{
                   bgcolor: `${primaryLight}20`,
-                  borderRadius: "50%",
+                  borderRadius: '50%',
                   p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <SchoolIcon sx={{ color: primaryLight }} />
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                     fontWeight: 700,
                     color: primaryLight,
                     mb: 2,
-                    fontSize: { xs: "2rem", sm: "2.5rem" },
+                    fontSize: { xs: '2rem', sm: '2.5rem' },
                   }}
                 >
                   {stats?.alunos.ativos ?? 0}
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                         height: 8,
                         borderRadius: 4,
                         bgcolor: `${primaryLight}20`,
-                        "& .MuiLinearProgress-bar": {
+                        '& .MuiLinearProgress-bar': {
                           bgcolor: primaryLight,
                         },
                       }}
@@ -270,9 +270,9 @@ export default function DashboardPage() {
         <Card
           elevation={2}
           sx={{
-            transition: "transform 0.2s, box-shadow 0.2s",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: 4,
             },
           }}
@@ -281,15 +281,15 @@ export default function DashboardPage() {
             avatar={
               <Box
                 sx={{
-                  bgcolor: "#3B82F620",
-                  borderRadius: "50%",
+                  bgcolor: '#3B82F620',
+                  borderRadius: '50%',
                   p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <AccessibilityNewIcon sx={{ color: "#3B82F6" }} />
+                <AccessibilityNewIcon sx={{ color: '#3B82F6' }} />
               </Box>
             }
             title={
@@ -308,8 +308,8 @@ export default function DashboardPage() {
                 component="div"
                 sx={{
                   fontWeight: 700,
-                  color: "#3B82F6",
-                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  color: '#3B82F6',
+                  fontSize: { xs: '2rem', sm: '2.5rem' },
                 }}
               >
                 {stats?.alunos.comNecessidadesEspeciais ?? 0}
@@ -322,9 +322,9 @@ export default function DashboardPage() {
         <Card
           elevation={2}
           sx={{
-            transition: "transform 0.2s, box-shadow 0.2s",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: 4,
             },
           }}
@@ -333,15 +333,15 @@ export default function DashboardPage() {
             avatar={
               <Box
                 sx={{
-                  bgcolor: "#F59E0B20",
-                  borderRadius: "50%",
+                  bgcolor: '#F59E0B20',
+                  borderRadius: '50%',
                   p: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <TrendingUpIcon sx={{ color: "#F59E0B" }} />
+                <TrendingUpIcon sx={{ color: '#F59E0B' }} />
               </Box>
             }
             title={
@@ -365,8 +365,8 @@ export default function DashboardPage() {
                 component="div"
                 sx={{
                   fontWeight: 700,
-                  color: "#F59E0B",
-                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  color: '#F59E0B',
+                  fontSize: { xs: '2rem', sm: '2.5rem' },
                 }}
               >
                 {stats?.alunos.cadastradosRecentemente ?? 0}
@@ -383,13 +383,13 @@ export default function DashboardPage() {
           p: { xs: 2.5, sm: 3, md: 4 },
           mb: { xs: 3, sm: 4 },
           borderRadius: 2,
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 2,
             mb: 3,
             pb: 2,
@@ -399,11 +399,11 @@ export default function DashboardPage() {
           <Box
             sx={{
               bgcolor: `${primaryColor}15`,
-              borderRadius: "50%",
+              borderRadius: '50%',
               p: 1.5,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <AdminPanelSettingsIcon
@@ -415,7 +415,7 @@ export default function DashboardPage() {
             sx={{
               fontWeight: 600,
               color: primaryColor,
-              fontSize: { xs: "1.25rem", sm: "1.5rem" },
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
             }}
           >
             Usuários do Sistema
@@ -424,12 +424,12 @@ export default function DashboardPage() {
         {loading ? (
           <Box
             sx={{
-              display: "grid",
+              display: 'grid',
               gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(3, 1fr)",
-                lg: "repeat(4, 1fr)",
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
               },
               gap: 3,
             }}
@@ -453,12 +453,12 @@ export default function DashboardPage() {
         ) : (
           <Box
             sx={{
-              display: "grid",
+              display: 'grid',
               gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(3, 1fr)",
-                lg: "repeat(auto-fit, minmax(180px, 1fr))",
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(auto-fit, minmax(180px, 1fr))',
               },
               gap: { xs: 2, sm: 2.5, md: 3 },
             }}
@@ -469,7 +469,7 @@ export default function DashboardPage() {
                 bgcolor: `${primaryColor}10`,
                 borderRadius: 2,
                 border: `2px solid ${primaryColor}`,
-                textAlign: "center",
+                textAlign: 'center',
               }}
             >
               <Typography
@@ -485,7 +485,7 @@ export default function DashboardPage() {
                 sx={{
                   fontWeight: 700,
                   color: primaryColor,
-                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  fontSize: { xs: '2rem', sm: '2.5rem' },
                 }}
               >
                 {stats?.usuarios.total ?? 0}
@@ -498,14 +498,14 @@ export default function DashboardPage() {
                     key={tipo}
                     sx={{
                       p: 3,
-                      bgcolor: "white",
+                      bgcolor: 'white',
                       borderRadius: 2,
-                      border: "2px solid #e5e7eb",
-                      textAlign: "center",
-                      transition: "all 0.2s",
-                      "&:hover": {
+                      border: '2px solid #e5e7eb',
+                      textAlign: 'center',
+                      transition: 'all 0.2s',
+                      '&:hover': {
                         borderColor: primaryColor,
-                        transform: "translateY(-2px)",
+                        transform: 'translateY(-2px)',
                         boxShadow: 2,
                       },
                     }}
@@ -521,19 +521,19 @@ export default function DashboardPage() {
                     <Chip
                       label={quantidade}
                       sx={{
-                        fontSize: "1.25rem",
+                        fontSize: '1.25rem',
                         height: 44,
                         fontWeight: 700,
                         bgcolor: `${primaryColor}15`,
                         color: primaryColor,
                         border: `2px solid ${primaryColor}`,
-                        "& .MuiChip-label": {
+                        '& .MuiChip-label': {
                           px: 3,
                         },
                       }}
                     />
                   </Box>
-                )
+                ),
               )}
           </Box>
         )}
@@ -545,13 +545,13 @@ export default function DashboardPage() {
         sx={{
           p: { xs: 2.5, sm: 3, md: 4 },
           borderRadius: 2,
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 2,
             mb: 3,
             pb: 2,
@@ -561,11 +561,11 @@ export default function DashboardPage() {
           <Box
             sx={{
               bgcolor: `${primaryColor}15`,
-              borderRadius: "50%",
+              borderRadius: '50%',
               p: 1.5,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <PersonAddIcon sx={{ color: primaryColor, fontSize: 32 }} />
@@ -575,7 +575,7 @@ export default function DashboardPage() {
             sx={{
               fontWeight: 600,
               color: primaryColor,
-              fontSize: { xs: "1.25rem", sm: "1.5rem" },
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
             }}
           >
             Ações Rápidas
@@ -583,11 +583,11 @@ export default function DashboardPage() {
         </Box>
         <Box
           sx={{
-            display: "grid",
+            display: 'grid',
             gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              lg: "repeat(3, 1fr)",
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              lg: 'repeat(3, 1fr)',
             },
             gap: { xs: 2, sm: 2.5, md: 3 },
           }}
@@ -600,17 +600,17 @@ export default function DashboardPage() {
             fullWidth
             sx={{
               py: { xs: 1.5, sm: 2 },
-              fontSize: { xs: "0.875rem", sm: "1rem" },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
               fontWeight: 600,
               bgcolor: primaryColor,
-              textTransform: "none",
+              textTransform: 'none',
               boxShadow: 2,
-              "&:hover": {
+              '&:hover': {
                 bgcolor: primaryDark,
-                transform: "translateY(-2px)",
+                transform: 'translateY(-2px)',
                 boxShadow: 4,
               },
-              transition: "all 0.2s",
+              transition: 'all 0.2s',
             }}
           >
             Cadastrar Novo Aluno
@@ -623,20 +623,20 @@ export default function DashboardPage() {
             fullWidth
             sx={{
               py: { xs: 1.5, sm: 2 },
-              fontSize: { xs: "0.875rem", sm: "1rem" },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
               fontWeight: 600,
               borderWidth: 2,
               borderColor: primaryColor,
               color: primaryColor,
-              textTransform: "none",
-              "&:hover": {
+              textTransform: 'none',
+              '&:hover': {
                 borderWidth: 2,
                 borderColor: primaryDark,
                 bgcolor: `${primaryColor}10`,
-                transform: "translateY(-2px)",
+                transform: 'translateY(-2px)',
                 boxShadow: 2,
               },
-              transition: "all 0.2s",
+              transition: 'all 0.2s',
             }}
           >
             Ver Todos os Alunos
@@ -649,20 +649,20 @@ export default function DashboardPage() {
             fullWidth
             sx={{
               py: { xs: 1.5, sm: 2 },
-              fontSize: { xs: "0.875rem", sm: "1rem" },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
               fontWeight: 600,
               borderWidth: 2,
               borderColor: primaryColor,
               color: primaryColor,
-              textTransform: "none",
-              "&:hover": {
+              textTransform: 'none',
+              '&:hover': {
                 borderWidth: 2,
                 borderColor: primaryDark,
                 bgcolor: `${primaryColor}10`,
-                transform: "translateY(-2px)",
+                transform: 'translateY(-2px)',
                 boxShadow: 2,
               },
-              transition: "all 0.2s",
+              transition: 'all 0.2s',
             }}
           >
             Gerenciar Sistema

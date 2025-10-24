@@ -1,7 +1,7 @@
-import prisma from "../src/lib/prisma";
+import prisma from '../src/lib/prisma';
 
 async function main() {
-  console.log("🔍 Verificando usuários no banco de dados...\n");
+  console.log('🔍 Verificando usuários no banco de dados...\n');
 
   const usuarios = await prisma.usuario.findMany({
     select: {
@@ -15,12 +15,12 @@ async function main() {
   });
 
   if (usuarios.length === 0) {
-    console.log("❌ Nenhum usuário encontrado no banco de dados!");
+    console.log('❌ Nenhum usuário encontrado no banco de dados!');
     console.log(
-      '\n💡 Execute "make prisma-studio" para criar o primeiro usuário.'
+      '\n💡 Execute "make prisma-studio" para criar o primeiro usuário.',
     );
     console.log(
-      "   Ou crie um usuário via script com senha criptografada usando bcrypt.\n"
+      '   Ou crie um usuário via script com senha criptografada usando bcrypt.\n',
     );
   } else {
     console.log(`✅ Encontrados ${usuarios.length} usuário(s):\n`);
@@ -29,16 +29,16 @@ async function main() {
       console.log(`  👤 Nome: ${user.nome}`);
       console.log(`  🏷️  Tipo: ${user.tipo}`);
       console.log(
-        `  ${user.isActive ? "✅" : "❌"} Status: ${
-          user.isActive ? "Ativo" : "Inativo"
-        }`
+        `  ${user.isActive ? '✅' : '❌'} Status: ${
+          user.isActive ? 'Ativo' : 'Inativo'
+        }`,
       );
       console.log(
-        `  ${user.senhaHash ? "🔒" : "⚠️ "} Senha: ${
-          user.senhaHash ? "Configurada" : "NÃO CONFIGURADA"
-        }`
+        `  ${user.senhaHash ? '🔒' : '⚠️ '} Senha: ${
+          user.senhaHash ? 'Configurada' : 'NÃO CONFIGURADA'
+        }`,
       );
-      console.log("");
+      console.log('');
     }
   }
 
@@ -46,6 +46,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("❌ Erro ao verificar usuários:", error);
+  console.error('❌ Erro ao verificar usuários:', error);
   process.exit(1);
 });

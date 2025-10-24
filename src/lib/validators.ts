@@ -5,7 +5,7 @@
  */
 export function validarCPF(cpf: string): boolean {
   // Remove caracteres não numéricos
-  const cpfLimpo = cpf.replace(/\D/g, "");
+  const cpfLimpo = cpf.replace(/\D/g, '');
 
   // Verifica se tem 11 dígitos
   if (cpfLimpo.length !== 11) {
@@ -48,13 +48,13 @@ export function validarCPF(cpf: string): boolean {
  * @returns CPF formatado ou string vazia se inválido
  */
 export function formatarCPF(cpf: string): string {
-  const cpfLimpo = cpf.replace(/\D/g, "");
+  const cpfLimpo = cpf.replace(/\D/g, '');
 
   if (cpfLimpo.length !== 11) {
     return cpf;
   }
 
-  return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
 /**
@@ -66,7 +66,7 @@ export function formatarCPF(cpf: string): string {
  * @returns CPF mascarado
  */
 export function mascararCPF(cpf: string): string {
-  const limpo = cpf.replace(/\D/g, "");
+  const limpo = cpf.replace(/\D/g, '');
   if (limpo.length !== 11) return cpf; // não altera se formato inesperado
   const inicio = limpo.slice(0, 3);
   const fim = limpo.slice(-2);
@@ -79,7 +79,7 @@ export function mascararCPF(cpf: string): string {
  * @returns CPF apenas com números
  */
 export function limparCPF(cpf: string): string {
-  return cpf.replace(/\D/g, "");
+  return cpf.replace(/\D/g, '');
 }
 
 /**
@@ -104,7 +104,7 @@ export function validarSenha(senha: string): {
   if (senha.length < 6) {
     return {
       valida: false,
-      mensagem: "A senha deve ter no mínimo 6 caracteres",
+      mensagem: 'A senha deve ter no mínimo 6 caracteres',
     };
   }
 
@@ -112,7 +112,7 @@ export function validarSenha(senha: string): {
 }
 
 // ========== Validadores Zod ==========
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Schema Zod para validação de CPF
@@ -120,24 +120,24 @@ import { z } from "zod";
  */
 export const cpfSchema = z
   .string()
-  .min(11, "CPF deve ter 11 dígitos")
-  .max(14, "CPF inválido")
+  .min(11, 'CPF deve ter 11 dígitos')
+  .max(14, 'CPF inválido')
   .refine(
     (value) => {
-      const limpo = value.replace(/\D/g, "");
+      const limpo = value.replace(/\D/g, '');
       return limpo.length === 11 && validarCPF(limpo);
     },
-    { message: "CPF inválido" }
+    { message: 'CPF inválido' },
   );
 
 /**
  * Schema Zod para validação de email
  */
-export const emailSchema = z.string().email("Email inválido");
+export const emailSchema = z.string().email('Email inválido');
 
 /**
  * Schema Zod para validação de senha
  */
 export const senhaSchema = z
   .string()
-  .min(6, "A senha deve ter no mínimo 6 caracteres");
+  .min(6, 'A senha deve ter no mínimo 6 caracteres');

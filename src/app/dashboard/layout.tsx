@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Box } from "@mui/material";
-import { useState } from "react";
-import { Header } from "./components/Header";
-import { Sidebar } from "./components/Sidebar";
+import { Box } from '@mui/material';
+import { useState } from 'react';
+import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
 
 // Largura do Drawer expandido e colapsado
 const SIDEBAR_WIDTH = 240;
@@ -32,8 +32,8 @@ export default function DashboardLayout({
   return (
     <Box
       sx={{
-        display: "flex",
-        minHeight: "100dvh",
+        display: 'flex',
+        minHeight: '100dvh',
         bgcolor: (theme) => theme.palette.background.default,
       }}
     >
@@ -52,12 +52,12 @@ export default function DashboardLayout({
         component="div"
         sx={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           ml: { xs: 0, md: `${currentWidth}px` },
-          width: { xs: "100%", md: `calc(100% - ${currentWidth}px)` },
+          width: { xs: '100%', md: `calc(100% - ${currentWidth}px)` },
           transition: (theme) =>
-            theme.transitions.create(["margin", "width"], {
+            theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
@@ -69,7 +69,7 @@ export default function DashboardLayout({
           sx={{
             p: { xs: 2, sm: 3 },
             flex: 1,
-            overflow: "auto",
+            overflow: 'auto',
           }}
         >
           {children}

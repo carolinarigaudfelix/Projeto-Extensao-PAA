@@ -1,12 +1,11 @@
-"use client";
+'use client';
 
-import { useRoleGuard } from "@/lib/route-guard";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import {
   Box,
   Button,
@@ -27,23 +26,24 @@ import {
   TableRow,
   TextField,
   Typography,
-} from "@mui/material";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+} from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
+import { useRoleGuard } from '@/lib/route-guard';
 
 // Mantém validação original para envio ao backend
 const baseSchema = z.object({
-  nome: z.string().min(2, "Nome muito curto"),
-  idade: z.coerce.number().int().min(1, "Idade inválida"),
-  matricula: z.string().min(3, "Matrícula muito curta"),
-  email: z.string().email("Email inválido").optional().or(z.literal("")),
-  telefone: z.string().optional().or(z.literal("")),
-  yearSchooling: z.coerce.number().int().min(1, "Ano escolar inválido"),
-  turma: z.string().optional().or(z.literal("")),
-  curso: z.string().optional().or(z.literal("")),
+  nome: z.string().min(2, 'Nome muito curto'),
+  idade: z.coerce.number().int().min(1, 'Idade inválida'),
+  matricula: z.string().min(3, 'Matrícula muito curta'),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  telefone: z.string().optional().or(z.literal('')),
+  yearSchooling: z.coerce.number().int().min(1, 'Ano escolar inválido'),
+  turma: z.string().optional().or(z.literal('')),
+  curso: z.string().optional().or(z.literal('')),
   isSpecialNeeds: z.boolean().default(false),
-  specialNeedsDetails: z.string().optional().or(z.literal("")),
+  specialNeedsDetails: z.string().optional().or(z.literal('')),
 });
 
 // Campos adicionais do wizard (ficam apenas client-side por enquanto)
@@ -74,40 +74,40 @@ type FormValues = z.infer<typeof baseSchema> & WizardExtra;
 
 export default function NovoAlunoPage() {
   const { isLoading, isAuthenticated, hasRole } = useRoleGuard([
-    "ADMIN",
-    "COORDENADOR",
-    "PROFESSOR",
-    "PEDAGOGO",
+    'ADMIN',
+    'COORDENADOR',
+    'PROFESSOR',
+    'PEDAGOGO',
   ]);
   const router = useRouter();
   const [form, setForm] = useState<FormValues>({
-    nome: "",
+    nome: '',
     idade: 0,
-    matricula: "",
-    email: "",
-    telefone: "",
+    matricula: '',
+    email: '',
+    telefone: '',
     yearSchooling: 0,
-    turma: "",
-    curso: "",
+    turma: '',
+    curso: '',
     isSpecialNeeds: false,
-    specialNeedsDetails: "",
+    specialNeedsDetails: '',
     apoioEducacional: [],
-    apoioOutros: "",
+    apoioOutros: '',
     equipePedagogica: [],
-    objetivosAvaliacao: "",
-    conhecimentoEstudante: "",
-    conhecimentoMultiplasFormas: "",
-    conhecimentoDescricao: "",
-    planificacaoDescricao: "",
-    intervencaoPreliminar: "",
-    intervencaoCompreensiva: "",
-    intervencaoTransicional: "",
-    observacoes: "",
+    objetivosAvaliacao: '',
+    conhecimentoEstudante: '',
+    conhecimentoMultiplasFormas: '',
+    conhecimentoDescricao: '',
+    planificacaoDescricao: '',
+    intervencaoPreliminar: '',
+    intervencaoCompreensiva: '',
+    intervencaoTransicional: '',
+    observacoes: '',
     draft: false,
   });
-  const [error, setError] = useState("");
-  const [draftMessage, setDraftMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState('');
+  const [draftMessage, setDraftMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(0);
@@ -115,7 +115,7 @@ export default function NovoAlunoPage() {
   // Carregar rascunho se existir
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("wizardAlunoDraft");
+      const raw = localStorage.getItem('wizardAlunoDraft');
       if (raw) {
         const parsed = JSON.parse(raw);
         setForm((prev) => ({ ...prev, ...parsed }));
@@ -124,12 +124,12 @@ export default function NovoAlunoPage() {
   }, []);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   }
 
@@ -147,7 +147,7 @@ export default function NovoAlunoPage() {
       ...prev,
       equipePedagogica: [
         ...prev.equipePedagogica,
-        { id: crypto.randomUUID(), nome: "", funcao: "", contato: "" },
+        { id: crypto.randomUUID(), nome: '', funcao: '', contato: '' },
       ],
     }));
   }
@@ -156,7 +156,7 @@ export default function NovoAlunoPage() {
     setForm((prev) => ({
       ...prev,
       equipePedagogica: prev.equipePedagogica.map((m) =>
-        m.id === id ? { ...m, [key]: value } : m
+        m.id === id ? { ...m, [key]: value } : m,
       ),
     }));
   }
@@ -171,7 +171,7 @@ export default function NovoAlunoPage() {
   const totalSteps = 7;
   const progressPercent = useMemo(
     () => Math.round(((step + 1 - 1) / (totalSteps - 1)) * 100),
-    [step]
+    [step],
   );
 
   function nextStep() {
@@ -184,26 +184,26 @@ export default function NovoAlunoPage() {
   function salvarRascunho() {
     try {
       localStorage.setItem(
-        "wizardAlunoDraft",
+        'wizardAlunoDraft',
         JSON.stringify({
           ...form,
           draft: true,
           savedAt: new Date().toISOString(),
-        })
+        }),
       );
       setForm((prev) => ({ ...prev, draft: true }));
-      setDraftMessage("Rascunho salvo localmente.");
+      setDraftMessage('Rascunho salvo localmente.');
       // Limpa mensagem após alguns segundos
-      setTimeout(() => setDraftMessage(""), 4000);
+      setTimeout(() => setDraftMessage(''), 4000);
     } catch {
-      setError("Falha ao salvar rascunho no navegador. Verifique permissões.");
+      setError('Falha ao salvar rascunho no navegador. Verifique permissões.');
     }
   }
 
   async function handleSubmit(e: React.FormEvent, draft = false) {
     e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+    setError('');
+    setSuccessMessage('');
     setFieldErrors({});
     setSaving(true);
 
@@ -241,25 +241,25 @@ export default function NovoAlunoPage() {
         intervencaoTransicional: form.intervencaoTransicional,
         observacoes: form.observacoes,
       };
-      const res = await fetch("/api/alunos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/alunos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.message || "Falha ao criar aluno");
+        setError(j.message || 'Falha ao criar aluno');
         setSaving(false);
         return;
       }
-      localStorage.removeItem("wizardAlunoDraft");
-      setSuccessMessage("Aluno criado com sucesso. Redirecionando...");
+      localStorage.removeItem('wizardAlunoDraft');
+      setSuccessMessage('Aluno criado com sucesso. Redirecionando...');
       setTimeout(() => {
-        router.push("/dashboard/alunos");
+        router.push('/dashboard/alunos');
         router.refresh();
       }, 800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro inesperado");
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
       setSaving(false);
     }
   }
@@ -367,14 +367,14 @@ export default function NovoAlunoPage() {
         </Typography>
         <Box display="flex" gap={1}>
           <Button
-            variant={form.isSpecialNeeds ? "contained" : "outlined"}
+            variant={form.isSpecialNeeds ? 'contained' : 'outlined'}
             color="primary"
             onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: true }))}
           >
             SIM
           </Button>
           <Button
-            variant={!form.isSpecialNeeds ? "contained" : "outlined"}
+            variant={!form.isSpecialNeeds ? 'contained' : 'outlined'}
             color="primary"
             onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: false }))}
           >
@@ -399,10 +399,10 @@ export default function NovoAlunoPage() {
         </Typography>
         <Box display="flex" flexDirection="column" gap={0.5}>
           {[
-            "Sala de recurso",
-            "Agente de apoio à inclusão",
-            "Biotecnologia",
-            "Outros",
+            'Sala de recurso',
+            'Agente de apoio à inclusão',
+            'Biotecnologia',
+            'Outros',
           ].map((op) => (
             <FormControlLabel
               key={op}
@@ -416,7 +416,7 @@ export default function NovoAlunoPage() {
             />
           ))}
         </Box>
-        {form.apoioEducacional.includes("Outros") && (
+        {form.apoioEducacional.includes('Outros') && (
           <TextField
             label="Se outros, quais?"
             name="apoioOutros"
@@ -451,7 +451,7 @@ export default function NovoAlunoPage() {
                     <TextField
                       value={m.nome}
                       onChange={(e) =>
-                        updateMembro(m.id, "nome", e.target.value)
+                        updateMembro(m.id, 'nome', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -462,7 +462,7 @@ export default function NovoAlunoPage() {
                     <TextField
                       value={m.funcao}
                       onChange={(e) =>
-                        updateMembro(m.id, "funcao", e.target.value)
+                        updateMembro(m.id, 'funcao', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -473,7 +473,7 @@ export default function NovoAlunoPage() {
                     <TextField
                       value={m.contato}
                       onChange={(e) =>
-                        updateMembro(m.id, "contato", e.target.value)
+                        updateMembro(m.id, 'contato', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -571,7 +571,7 @@ export default function NovoAlunoPage() {
     <Box key="step4" display="flex" flexDirection="column" gap={3}>
       <Paper
         variant="outlined"
-        sx={{ p: 2, bgcolor: "primary.light", opacity: 0.15 }}
+        sx={{ p: 2, bgcolor: 'primary.light', opacity: 0.15 }}
       >
         <Typography variant="body2" fontWeight={500}>
           Nesta seção, descreva como as diferentes disciplinas podem colaborar
@@ -649,13 +649,13 @@ export default function NovoAlunoPage() {
           </Typography>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography variant="body2">
-              <strong>Nome:</strong> {form.nome || "(não informado)"}
+              <strong>Nome:</strong> {form.nome || '(não informado)'}
             </Typography>
             <Typography variant="body2">
-              <strong>Idade:</strong> {form.idade || "(não informado)"}
+              <strong>Idade:</strong> {form.idade || '(não informado)'}
             </Typography>
             <Typography variant="body2">
-              <strong>Matrícula:</strong> {form.matricula || "(não informado)"}
+              <strong>Matrícula:</strong> {form.matricula || '(não informado)'}
             </Typography>
             {form.email && (
               <Typography variant="body2">
@@ -684,8 +684,8 @@ export default function NovoAlunoPage() {
           </Typography>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography variant="body2">
-              <strong>Ano Escolar:</strong>{" "}
-              {form.yearSchooling || "(não informado)"}
+              <strong>Ano Escolar:</strong>{' '}
+              {form.yearSchooling || '(não informado)'}
             </Typography>
             {form.turma && (
               <Typography variant="body2">
@@ -713,8 +713,8 @@ export default function NovoAlunoPage() {
             ♿ Necessidades Especiais
           </Typography>
           <Typography variant="body2">
-            <strong>Possui necessidades especiais:</strong>{" "}
-            {form.isSpecialNeeds ? "Sim" : "Não"}
+            <strong>Possui necessidades especiais:</strong>{' '}
+            {form.isSpecialNeeds ? 'Sim' : 'Não'}
           </Typography>
           {form.isSpecialNeeds && form.specialNeedsDetails && (
             <Box mt={1}>
@@ -745,10 +745,10 @@ export default function NovoAlunoPage() {
                   sx={{
                     px: 1.5,
                     py: 0.5,
-                    bgcolor: "primary.light",
-                    color: "primary.contrastText",
+                    bgcolor: 'primary.light',
+                    color: 'primary.contrastText',
                     borderRadius: 1,
-                    fontSize: "0.875rem",
+                    fontSize: '0.875rem',
                   }}
                 >
                   {apoio}
@@ -777,16 +777,16 @@ export default function NovoAlunoPage() {
               gutterBottom
             >
               👥 Equipe Pedagógica ({form.equipePedagogica.length} membro
-              {form.equipePedagogica.length !== 1 ? "s" : ""})
+              {form.equipePedagogica.length !== 1 ? 's' : ''})
             </Typography>
             <Box display="flex" flexDirection="column" gap={1.5}>
               {form.equipePedagogica.map((membro, idx) => (
                 <Box
                   key={membro.id}
-                  sx={{ pl: 2, borderLeft: 2, borderColor: "divider" }}
+                  sx={{ pl: 2, borderLeft: 2, borderColor: 'divider' }}
                 >
                   <Typography variant="body2">
-                    <strong>{idx + 1}.</strong> {membro.nome || "(sem nome)"}
+                    <strong>{idx + 1}.</strong> {membro.nome || '(sem nome)'}
                   </Typography>
                   {membro.funcao && (
                     <Typography variant="body2" color="text.secondary">
@@ -957,17 +957,17 @@ export default function NovoAlunoPage() {
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 3 } }}>
-      <Card elevation={3} sx={{ overflow: "hidden" }}>
+      <Card elevation={3} sx={{ overflow: 'hidden' }}>
         <Box
           sx={{
-            bgcolor: "primary.dark",
-            color: "primary.contrastText",
+            bgcolor: 'primary.dark',
+            color: 'primary.contrastText',
             px: 2.5,
             py: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
             gap: 2,
           }}
         >
@@ -1007,7 +1007,7 @@ export default function NovoAlunoPage() {
             {error && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.5, mb: 2, borderColor: "error.light" }}
+                sx={{ p: 1.5, mb: 2, borderColor: 'error.light' }}
               >
                 <Typography variant="subtitle2" color="error" gutterBottom>
                   Erro
@@ -1020,7 +1020,7 @@ export default function NovoAlunoPage() {
             {draftMessage && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.2, mb: 2, borderColor: "primary.light" }}
+                sx={{ p: 1.2, mb: 2, borderColor: 'primary.light' }}
               >
                 <Typography variant="subtitle2" color="primary" gutterBottom>
                   Rascunho
@@ -1033,7 +1033,7 @@ export default function NovoAlunoPage() {
             {successMessage && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.2, mb: 2, borderColor: "success.light" }}
+                sx={{ p: 1.2, mb: 2, borderColor: 'success.light' }}
               >
                 <Typography
                   variant="subtitle2"
@@ -1053,13 +1053,13 @@ export default function NovoAlunoPage() {
           <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
             {(() => {
               const labels = [
-                "1. Identificação do Estudante",
-                "2-3. Equipe e Objetivos",
-                "4. Conhecimento",
-                "5. Planificação",
-                "6. Intervenção",
-                "7. Observações",
-                "Revisão",
+                '1. Identificação do Estudante',
+                '2-3. Equipe e Objetivos',
+                '4. Conhecimento',
+                '5. Planificação',
+                '6. Intervenção',
+                '7. Observações',
+                'Revisão',
               ];
               return labels[step];
             })()}
@@ -1126,7 +1126,7 @@ export default function NovoAlunoPage() {
                     type="submit"
                     disabled={saving}
                   >
-                    {saving ? "Salvando..." : "Finalizar"}
+                    {saving ? 'Salvando...' : 'Finalizar'}
                   </Button>
                 </Box>
               )}

@@ -7,7 +7,7 @@ export interface Usuario {
   cpf: string; // sempre armazenado sem máscara
   email: string;
   telefone?: string | null; // caso futuro
-  tipo: "ADMIN" | "COORDENADOR" | "PROFESSOR" | "PEDAGOGO";
+  tipo: 'ADMIN' | 'COORDENADOR' | 'PROFESSOR' | 'PEDAGOGO';
   criado?: string; // ISO
   criadoPor?: string;
   criadoPorNome?: string | null; // Nome do usuário que criou
@@ -22,5 +22,5 @@ export interface UsuarioInput {
   cpf: string; // sem máscara
   email: string;
   senha: string;
-  tipo: "ADMIN" | "COORDENADOR" | "PROFESSOR" | "PEDAGOGO";
+  tipo: 'ADMIN' | 'COORDENADOR' | 'PROFESSOR' | 'PEDAGOGO';
 }

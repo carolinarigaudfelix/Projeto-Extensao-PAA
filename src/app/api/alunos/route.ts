@@ -1,26 +1,26 @@
-import prisma from "@/lib/prisma";
-import type { TokenPayload } from "@/types/auth";
-import { getToken } from "next-auth/jwt";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import { z } from 'zod';
+import prisma from '@/lib/prisma';
+import type { TokenPayload } from '@/types/auth';
 
-const ALLOWED_ROLES = ["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"];
+const ALLOWED_ROLES = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'];
 
 export async function GET(req: Request) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token)
-      return NextResponse.json({ message: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ message: 'Não autorizado' }, { status: 401 });
     if (!ALLOWED_ROLES.includes(token.tipo as string))
-      return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
+      return NextResponse.json({ message: 'Acesso negado' }, { status: 403 });
 
     const url = new URL(req.url);
-    const includeInactive = url.searchParams.get("includeInactive");
-    const curso = url.searchParams.get("curso");
-    const turma = url.searchParams.get("turma");
+    const includeInactive = url.searchParams.get('includeInactive');
+    const curso = url.searchParams.get('curso');
+    const turma = url.searchParams.get('turma');
 
     const where = {
-      ...(includeInactive !== "true" && { isActive: true }),
+      ...(includeInactive !== 'true' && { isActive: true }),
       ...(curso && { curso }),
       ...(turma && { turma }),
     };
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       include: {
         avaliacoes: {
           where: { isActive: true },
-          orderBy: { data: "desc" },
+          orderBy: { data: 'desc' },
           take: 5,
           include: {
             avaliador: {
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
           },
         },
       },
-      orderBy: { nome: "asc" },
+      orderBy: { nome: 'asc' },
     });
 
     // Buscar nomes dos usuários que criaram/atualizaram
@@ -74,10 +74,10 @@ export async function GET(req: Request) {
 
     return NextResponse.json(estudantesComNomes);
   } catch (error) {
-    console.error("Erro ao buscar estudantes:", error);
+    console.error('Erro ao buscar estudantes:', error);
     return NextResponse.json(
-      { message: "Erro ao buscar estudantes." },
-      { status: 500 }
+      { message: 'Erro ao buscar estudantes.' },
+      { status: 500 },
     );
   }
 }
@@ -86,9 +86,9 @@ export async function POST(req: Request) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token)
-      return NextResponse.json({ message: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ message: 'Não autorizado' }, { status: 401 });
     if (!ALLOWED_ROLES.includes(token.tipo as string))
-      return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
+      return NextResponse.json({ message: 'Acesso negado' }, { status: 403 });
 
     const body = await req.json();
 
@@ -97,48 +97,48 @@ export async function POST(req: Request) {
       nome: z.string().min(2),
       idade: z.number().int().min(1),
       matricula: z.string().min(3),
-      email: z.string().email().optional().or(z.literal("")),
-      telefone: z.string().optional().or(z.literal("")),
+      email: z.string().email().optional().or(z.literal('')),
+      telefone: z.string().optional().or(z.literal('')),
       yearSchooling: z.number().int().min(1),
-      turma: z.string().optional().or(z.literal("")),
-      curso: z.string().optional().or(z.literal("")),
+      turma: z.string().optional().or(z.literal('')),
+      curso: z.string().optional().or(z.literal('')),
       isSpecialNeeds: z.boolean().default(false),
-      specialNeedsDetails: z.string().optional().or(z.literal("")),
+      specialNeedsDetails: z.string().optional().or(z.literal('')),
       apoioEducacional: z.array(z.string()).default([]),
-      apoioOutros: z.string().optional().or(z.literal("")),
+      apoioOutros: z.string().optional().or(z.literal('')),
       equipePedagogica: z
         .array(
           z.object({
             id: z.string(),
-            nome: z.string().optional().or(z.literal("")),
-            funcao: z.string().optional().or(z.literal("")),
-            contato: z.string().optional().or(z.literal("")),
-          })
+            nome: z.string().optional().or(z.literal('')),
+            funcao: z.string().optional().or(z.literal('')),
+            contato: z.string().optional().or(z.literal('')),
+          }),
         )
         .optional()
         .default([]),
-      objetivosAvaliacao: z.string().optional().or(z.literal("")),
-      conhecimentoEstudante: z.string().optional().or(z.literal("")),
-      conhecimentoMultiplasFormas: z.string().optional().or(z.literal("")),
-      conhecimentoDescricao: z.string().optional().or(z.literal("")),
-      planificacaoDescricao: z.string().optional().or(z.literal("")),
-      intervencaoPreliminar: z.string().optional().or(z.literal("")),
-      intervencaoCompreensiva: z.string().optional().or(z.literal("")),
-      intervencaoTransicional: z.string().optional().or(z.literal("")),
-      observacoes: z.string().optional().or(z.literal("")),
+      objetivosAvaliacao: z.string().optional().or(z.literal('')),
+      conhecimentoEstudante: z.string().optional().or(z.literal('')),
+      conhecimentoMultiplasFormas: z.string().optional().or(z.literal('')),
+      conhecimentoDescricao: z.string().optional().or(z.literal('')),
+      planificacaoDescricao: z.string().optional().or(z.literal('')),
+      intervencaoPreliminar: z.string().optional().or(z.literal('')),
+      intervencaoCompreensiva: z.string().optional().or(z.literal('')),
+      intervencaoTransicional: z.string().optional().or(z.literal('')),
+      observacoes: z.string().optional().or(z.literal('')),
     });
 
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Dados inválidos.",
+          message: 'Dados inválidos.',
           issues: parsed.error.issues.map((i) => ({
             path: i.path,
             message: i.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,7 +148,7 @@ export async function POST(req: Request) {
     // Monta membro da equipe pedagógica com usuário autenticado
     const membroAtual = {
       id: payload.id,
-      nome: payload.nome || "",
+      nome: payload.nome || '',
       funcao: payload.tipo,
     };
     // Garante que não haja duplicidade do usuário
@@ -169,22 +169,22 @@ export async function POST(req: Request) {
 
     return NextResponse.json(novoEstudante, { status: 201 });
   } catch (error) {
-    console.error("Erro ao cadastrar estudante:", error);
+    console.error('Erro ao cadastrar estudante:', error);
     const err = error as { code?: string; meta?: { target?: string[] } };
 
-    if (err?.code === "P2002" && err?.meta?.target?.includes("matricula")) {
+    if (err?.code === 'P2002' && err?.meta?.target?.includes('matricula')) {
       return NextResponse.json(
         {
-          message: "Já existe um estudante com esta matrícula.",
-          error: "MATRICULA_DUPLICADA",
+          message: 'Já existe um estudante com esta matrícula.',
+          error: 'MATRICULA_DUPLICADA',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { message: "Erro ao cadastrar estudante." },
-      { status: 400 }
+      { message: 'Erro ao cadastrar estudante.' },
+      { status: 400 },
     );
   }
 }

@@ -1,6 +1,6 @@
-import prisma from "@/lib/prisma";
-import { getToken } from "next-auth/jwt";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import prisma from '@/lib/prisma';
 
 // GET - Buscar estatísticas do dashboard
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     // Buscar estatísticas em paralelo
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
       // Usuários por tipo
       prisma.usuario.groupBy({
-        by: ["tipo"],
+        by: ['tipo'],
         _count: true,
         where: { isActive: true },
       }),
@@ -58,10 +58,13 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Formatar dados de usuários por tipo
-    const usuariosPorTipoFormatado = usuariosPorTipo.reduce((acc, item) => {
-      acc[item.tipo] = item._count;
-      return acc;
-    }, {} as Record<string, number>);
+    const usuariosPorTipoFormatado = usuariosPorTipo.reduce(
+      (acc, item) => {
+        acc[item.tipo] = item._count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return NextResponse.json({
       alunos: {
@@ -76,10 +79,10 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Erro ao buscar estatísticas:", error);
+    console.error('Erro ao buscar estatísticas:', error);
     return NextResponse.json(
-      { error: "Erro ao buscar estatísticas" },
-      { status: 500 }
+      { error: 'Erro ao buscar estatísticas' },
+      { status: 500 },
     );
   }
 }

@@ -1,12 +1,10 @@
-"use client";
+'use client';
 
-import { useRoleGuard } from "@/lib/route-guard";
-import type { EquipePedagogicaMembro, Estudante } from "@/types/estudante";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import {
   Box,
   Button,
@@ -27,23 +25,25 @@ import {
   TableRow,
   TextField,
   Typography,
-} from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+} from '@mui/material';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
+import { useRoleGuard } from '@/lib/route-guard';
+import type { EquipePedagogicaMembro, Estudante } from '@/types/estudante';
 
 // Schema igual ao de novo aluno
 const baseSchema = z.object({
-  nome: z.string().min(2, "Nome muito curto"),
-  idade: z.coerce.number().int().min(1, "Idade inválida"),
-  matricula: z.string().min(3, "Matrícula muito curta"),
-  email: z.string().email("Email inválido").optional().or(z.literal("")),
-  telefone: z.string().optional().or(z.literal("")),
-  yearSchooling: z.coerce.number().int().min(1, "Ano escolar inválido"),
-  turma: z.string().optional().or(z.literal("")),
-  curso: z.string().optional().or(z.literal("")),
+  nome: z.string().min(2, 'Nome muito curto'),
+  idade: z.coerce.number().int().min(1, 'Idade inválida'),
+  matricula: z.string().min(3, 'Matrícula muito curta'),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  telefone: z.string().optional().or(z.literal('')),
+  yearSchooling: z.coerce.number().int().min(1, 'Ano escolar inválido'),
+  turma: z.string().optional().or(z.literal('')),
+  curso: z.string().optional().or(z.literal('')),
   isSpecialNeeds: z.boolean().default(false),
-  specialNeedsDetails: z.string().optional().or(z.literal("")),
+  specialNeedsDetails: z.string().optional().or(z.literal('')),
 });
 
 type EquipeMembro = {
@@ -75,37 +75,37 @@ export default function EditarAlunoPage() {
     isLoading: authLoading,
     isAuthenticated,
     hasRole,
-  } = useRoleGuard(["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"]);
+  } = useRoleGuard(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO']);
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<FormValues>({
-    nome: "",
+    nome: '',
     idade: 0,
-    matricula: "",
-    email: "",
-    telefone: "",
+    matricula: '',
+    email: '',
+    telefone: '',
     yearSchooling: 0,
-    turma: "",
-    curso: "",
+    turma: '',
+    curso: '',
     isSpecialNeeds: false,
-    specialNeedsDetails: "",
+    specialNeedsDetails: '',
     apoioEducacional: [],
-    apoioOutros: "",
+    apoioOutros: '',
     equipePedagogica: [],
-    objetivosAvaliacao: "",
-    conhecimentoEstudante: "",
-    conhecimentoMultiplasFormas: "",
-    conhecimentoDescricao: "",
-    planificacaoDescricao: "",
-    intervencaoPreliminar: "",
-    intervencaoCompreensiva: "",
-    intervencaoTransicional: "",
-    observacoes: "",
+    objetivosAvaliacao: '',
+    conhecimentoEstudante: '',
+    conhecimentoMultiplasFormas: '',
+    conhecimentoDescricao: '',
+    planificacaoDescricao: '',
+    intervencaoPreliminar: '',
+    intervencaoCompreensiva: '',
+    intervencaoTransicional: '',
+    observacoes: '',
   });
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -118,7 +118,7 @@ export default function EditarAlunoPage() {
         const res = await fetch(`/api/alunos/${id}`);
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          setError(j.message || "Falha ao carregar aluno");
+          setError(j.message || 'Falha ao carregar aluno');
           setLoading(false);
           return;
         }
@@ -127,36 +127,36 @@ export default function EditarAlunoPage() {
           nome: data.nome,
           idade: data.idade,
           matricula: data.matricula,
-          email: data.email || "",
-          telefone: data.telefone || "",
+          email: data.email || '',
+          telefone: data.telefone || '',
           yearSchooling: data.yearSchooling,
-          turma: data.turma || "",
-          curso: data.curso || "",
+          turma: data.turma || '',
+          curso: data.curso || '',
           isSpecialNeeds: data.isSpecialNeeds,
-          specialNeedsDetails: data.specialNeedsDetails || "",
+          specialNeedsDetails: data.specialNeedsDetails || '',
           apoioEducacional: data.apoioEducacional || [],
-          apoioOutros: data.apoioOutros || "",
+          apoioOutros: data.apoioOutros || '',
           equipePedagogica: (data.equipePedagogica || []).map(
             (m: EquipePedagogicaMembro) => ({
               id: m.id,
-              nome: m.nome || "",
-              funcao: m.funcao || "",
-              contato: m.contato || "",
-            })
+              nome: m.nome || '',
+              funcao: m.funcao || '',
+              contato: m.contato || '',
+            }),
           ),
-          objetivosAvaliacao: data.objetivosAvaliacao || "",
-          conhecimentoEstudante: data.conhecimentoEstudante || "",
-          conhecimentoMultiplasFormas: data.conhecimentoMultiplasFormas || "",
-          conhecimentoDescricao: data.conhecimentoDescricao || "",
-          planificacaoDescricao: data.planificacaoDescricao || "",
-          intervencaoPreliminar: data.intervencaoPreliminar || "",
-          intervencaoCompreensiva: data.intervencaoCompreensiva || "",
-          intervencaoTransicional: data.intervencaoTransicional || "",
-          observacoes: data.observacoes || "",
+          objetivosAvaliacao: data.objetivosAvaliacao || '',
+          conhecimentoEstudante: data.conhecimentoEstudante || '',
+          conhecimentoMultiplasFormas: data.conhecimentoMultiplasFormas || '',
+          conhecimentoDescricao: data.conhecimentoDescricao || '',
+          planificacaoDescricao: data.planificacaoDescricao || '',
+          intervencaoPreliminar: data.intervencaoPreliminar || '',
+          intervencaoCompreensiva: data.intervencaoCompreensiva || '',
+          intervencaoTransicional: data.intervencaoTransicional || '',
+          observacoes: data.observacoes || '',
         });
         setLoading(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro inesperado");
+        setError(e instanceof Error ? e.message : 'Erro inesperado');
         setLoading(false);
       }
     }
@@ -164,12 +164,12 @@ export default function EditarAlunoPage() {
   }, [id, hasRole]);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   }
 
@@ -187,7 +187,7 @@ export default function EditarAlunoPage() {
       ...prev,
       equipePedagogica: [
         ...prev.equipePedagogica,
-        { id: crypto.randomUUID(), nome: "", funcao: "", contato: "" },
+        { id: crypto.randomUUID(), nome: '', funcao: '', contato: '' },
       ],
     }));
   }
@@ -196,7 +196,7 @@ export default function EditarAlunoPage() {
     setForm((prev) => ({
       ...prev,
       equipePedagogica: prev.equipePedagogica.map((m) =>
-        m.id === id ? { ...m, [key]: value } : m
+        m.id === id ? { ...m, [key]: value } : m,
       ),
     }));
   }
@@ -211,7 +211,7 @@ export default function EditarAlunoPage() {
   const totalSteps = 7;
   const progressPercent = useMemo(
     () => Math.round(((step + 1 - 1) / (totalSteps - 1)) * 100),
-    [step]
+    [step],
   );
 
   function nextStep() {
@@ -223,7 +223,7 @@ export default function EditarAlunoPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setFieldErrors({});
     setSaving(true);
 
@@ -255,20 +255,20 @@ export default function EditarAlunoPage() {
         observacoes: form.observacoes,
       };
       const res = await fetch(`/api/alunos/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.message || "Falha ao atualizar aluno");
+        setError(j.message || 'Falha ao atualizar aluno');
         setSaving(false);
         return;
       }
       router.push(`/dashboard/alunos/${id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro inesperado");
+      setError(e instanceof Error ? e.message : 'Erro inesperado');
       setSaving(false);
     }
   }
@@ -361,14 +361,14 @@ export default function EditarAlunoPage() {
         </Typography>
         <Box display="flex" gap={1}>
           <Button
-            variant={form.isSpecialNeeds ? "contained" : "outlined"}
+            variant={form.isSpecialNeeds ? 'contained' : 'outlined'}
             color="primary"
             onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: true }))}
           >
             SIM
           </Button>
           <Button
-            variant={!form.isSpecialNeeds ? "contained" : "outlined"}
+            variant={!form.isSpecialNeeds ? 'contained' : 'outlined'}
             color="primary"
             onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: false }))}
           >
@@ -393,10 +393,10 @@ export default function EditarAlunoPage() {
         </Typography>
         <Box display="flex" flexDirection="column" gap={0.5}>
           {[
-            "Sala de recurso",
-            "Agente de apoio à inclusão",
-            "Biotecnologia",
-            "Outros",
+            'Sala de recurso',
+            'Agente de apoio à inclusão',
+            'Biotecnologia',
+            'Outros',
           ].map((op) => (
             <FormControlLabel
               key={op}
@@ -410,7 +410,7 @@ export default function EditarAlunoPage() {
             />
           ))}
         </Box>
-        {form.apoioEducacional.includes("Outros") && (
+        {form.apoioEducacional.includes('Outros') && (
           <TextField
             label="Se outros, quais?"
             name="apoioOutros"
@@ -445,7 +445,7 @@ export default function EditarAlunoPage() {
                     <TextField
                       value={m.nome}
                       onChange={(e) =>
-                        updateMembro(m.id, "nome", e.target.value)
+                        updateMembro(m.id, 'nome', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -456,7 +456,7 @@ export default function EditarAlunoPage() {
                     <TextField
                       value={m.funcao}
                       onChange={(e) =>
-                        updateMembro(m.id, "funcao", e.target.value)
+                        updateMembro(m.id, 'funcao', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -467,7 +467,7 @@ export default function EditarAlunoPage() {
                     <TextField
                       value={m.contato}
                       onChange={(e) =>
-                        updateMembro(m.id, "contato", e.target.value)
+                        updateMembro(m.id, 'contato', e.target.value)
                       }
                       size="small"
                       fullWidth
@@ -565,7 +565,7 @@ export default function EditarAlunoPage() {
     <Box key="step4" display="flex" flexDirection="column" gap={3}>
       <Paper
         variant="outlined"
-        sx={{ p: 2, bgcolor: "primary.light", opacity: 0.15 }}
+        sx={{ p: 2, bgcolor: 'primary.light', opacity: 0.15 }}
       >
         <Typography variant="body2" fontWeight={500}>
           Nesta seção, descreva como as diferentes disciplinas podem colaborar
@@ -643,13 +643,13 @@ export default function EditarAlunoPage() {
           </Typography>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography variant="body2">
-              <strong>Nome:</strong> {form.nome || "(não informado)"}
+              <strong>Nome:</strong> {form.nome || '(não informado)'}
             </Typography>
             <Typography variant="body2">
-              <strong>Idade:</strong> {form.idade || "(não informado)"}
+              <strong>Idade:</strong> {form.idade || '(não informado)'}
             </Typography>
             <Typography variant="body2">
-              <strong>Matrícula:</strong> {form.matricula || "(não informado)"}
+              <strong>Matrícula:</strong> {form.matricula || '(não informado)'}
             </Typography>
             {form.email && (
               <Typography variant="body2">
@@ -678,8 +678,8 @@ export default function EditarAlunoPage() {
           </Typography>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography variant="body2">
-              <strong>Ano Escolar:</strong>{" "}
-              {form.yearSchooling || "(não informado)"}
+              <strong>Ano Escolar:</strong>{' '}
+              {form.yearSchooling || '(não informado)'}
             </Typography>
             {form.turma && (
               <Typography variant="body2">
@@ -707,8 +707,8 @@ export default function EditarAlunoPage() {
             ♿ Necessidades Especiais
           </Typography>
           <Typography variant="body2">
-            <strong>Possui necessidades especiais:</strong>{" "}
-            {form.isSpecialNeeds ? "Sim" : "Não"}
+            <strong>Possui necessidades especiais:</strong>{' '}
+            {form.isSpecialNeeds ? 'Sim' : 'Não'}
           </Typography>
           {form.isSpecialNeeds && form.specialNeedsDetails && (
             <Box mt={1}>
@@ -739,10 +739,10 @@ export default function EditarAlunoPage() {
                   sx={{
                     px: 1.5,
                     py: 0.5,
-                    bgcolor: "primary.light",
-                    color: "primary.contrastText",
+                    bgcolor: 'primary.light',
+                    color: 'primary.contrastText',
                     borderRadius: 1,
-                    fontSize: "0.875rem",
+                    fontSize: '0.875rem',
                   }}
                 >
                   {apoio}
@@ -771,16 +771,16 @@ export default function EditarAlunoPage() {
               gutterBottom
             >
               👥 Equipe Pedagógica ({form.equipePedagogica.length} membro
-              {form.equipePedagogica.length !== 1 ? "s" : ""})
+              {form.equipePedagogica.length !== 1 ? 's' : ''})
             </Typography>
             <Box display="flex" flexDirection="column" gap={1.5}>
               {form.equipePedagogica.map((membro, idx) => (
                 <Box
                   key={membro.id}
-                  sx={{ pl: 2, borderLeft: 2, borderColor: "divider" }}
+                  sx={{ pl: 2, borderLeft: 2, borderColor: 'divider' }}
                 >
                   <Typography variant="body2">
-                    <strong>{idx + 1}.</strong> {membro.nome || "(sem nome)"}
+                    <strong>{idx + 1}.</strong> {membro.nome || '(sem nome)'}
                   </Typography>
                   {membro.funcao && (
                     <Typography variant="body2" color="text.secondary">
@@ -958,7 +958,7 @@ export default function EditarAlunoPage() {
         Atualize as informações do aluno
       </Typography>
       {error && (
-        <Card variant="outlined" sx={{ mb: 2, borderColor: "error.light" }}>
+        <Card variant="outlined" sx={{ mb: 2, borderColor: 'error.light' }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
@@ -1005,7 +1005,7 @@ export default function EditarAlunoPage() {
                 saving ? <CircularProgress size={18} /> : <SaveOutlinedIcon />
               }
             >
-              {saving ? "Salvando..." : "Salvar alterações"}
+              {saving ? 'Salvando...' : 'Salvar alterações'}
             </Button>
             <Button
               variant="outlined"

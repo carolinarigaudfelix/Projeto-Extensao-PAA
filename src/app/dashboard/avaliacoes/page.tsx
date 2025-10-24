@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-import type { AvaliacaoResumo, Estudante } from "@/types/estudante";
-import AddIcon from "@mui/icons-material/Add";
+import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
   Button,
@@ -17,26 +16,27 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@mui/material";
-import NextLink from "next/link";
-import { useEffect, useState } from "react";
+} from '@mui/material';
+import NextLink from 'next/link';
+import { useEffect, useState } from 'react';
+import type { AvaliacaoResumo, Estudante } from '@/types/estudante';
 
 export default function AvaliacoesPage() {
   const [alunos, setAlunos] = useState<Estudante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchAlunos() {
       setLoading(true);
-      setError("");
+      setError('');
       try {
-        const res = await fetch("/api/alunos?includeInactive=false");
-        if (!res.ok) throw new Error("Falha ao buscar alunos");
+        const res = await fetch('/api/alunos?includeInactive=false');
+        if (!res.ok) throw new Error('Falha ao buscar alunos');
         const data = await res.json();
         setAlunos(data);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro inesperado");
+        setError(e instanceof Error ? e.message : 'Erro inesperado');
       } finally {
         setLoading(false);
       }
@@ -76,7 +76,7 @@ export default function AvaliacoesPage() {
           <CircularProgress />
         </Box>
       ) : error ? (
-        <Card variant="outlined" sx={{ mb: 2, borderColor: "error.light" }}>
+        <Card variant="outlined" sx={{ mb: 2, borderColor: 'error.light' }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
@@ -124,14 +124,14 @@ export default function AvaliacoesPage() {
                     aluno.avaliacoes && aluno.avaliacoes.length > 0
                       ? aluno.avaliacoes[0]
                       : null;
-                  let proxima = "-";
+                  let proxima = '-';
                   let isVencida = false;
                   if (ultima?.periodoReavaliacao && ultima?.data) {
                     const prox = new Date(ultima.data);
                     prox.setDate(
-                      prox.getDate() + (ultima.periodoReavaliacao || 0)
+                      prox.getDate() + (ultima.periodoReavaliacao || 0),
                     );
-                    proxima = prox.toLocaleDateString("pt-BR");
+                    proxima = prox.toLocaleDateString('pt-BR');
                     isVencida = prox < new Date();
                   }
                   return (
@@ -142,7 +142,7 @@ export default function AvaliacoesPage() {
                           href={`/dashboard/alunos/${aluno.id}`}
                           variant="text"
                           size="small"
-                          sx={{ textTransform: "none" }}
+                          sx={{ textTransform: 'none' }}
                         >
                           {aluno.nome}
                         </Button>
@@ -150,21 +150,21 @@ export default function AvaliacoesPage() {
                       <TableCell>{aluno.matricula}</TableCell>
                       <TableCell>
                         {ultima
-                          ? new Date(ultima.data).toLocaleDateString("pt-BR")
-                          : "-"}
+                          ? new Date(ultima.data).toLocaleDateString('pt-BR')
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         <Typography
                           variant="body2"
                           sx={{
                             maxWidth: 200,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
-                          title={ultima?.evolucao || "-"}
+                          title={ultima?.evolucao || '-'}
                         >
-                          {ultima?.evolucao || "-"}
+                          {ultima?.evolucao || '-'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -172,32 +172,32 @@ export default function AvaliacoesPage() {
                           variant="body2"
                           sx={{
                             maxWidth: 200,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
-                          title={ultima?.dificuldades || "-"}
+                          title={ultima?.dificuldades || '-'}
                         >
-                          {ultima?.dificuldades || "-"}
+                          {ultima?.dificuldades || '-'}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {proxima !== "-" ? (
+                        {proxima !== '-' ? (
                           <Chip
                             label={proxima}
                             size="small"
-                            color={isVencida ? "error" : "success"}
+                            color={isVencida ? 'error' : 'success'}
                             variant="filled"
                           />
                         ) : (
-                          "-"
+                          '-'
                         )}
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={aluno.isActive ? "Ativo" : "Inativo"}
+                          label={aluno.isActive ? 'Ativo' : 'Inativo'}
                           size="small"
-                          color={aluno.isActive ? "success" : "default"}
+                          color={aluno.isActive ? 'success' : 'default'}
                           variant="outlined"
                         />
                       </TableCell>

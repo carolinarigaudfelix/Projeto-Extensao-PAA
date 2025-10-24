@@ -1,9 +1,7 @@
-"use client";
+'use client';
 
-import { useRoleGuard } from "@/lib/route-guard";
-import type { Estudante } from "@/types/estudante";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   Box,
   Button,
@@ -22,10 +20,12 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@mui/material";
-import NextLink from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+} from '@mui/material';
+import NextLink from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRoleGuard } from '@/lib/route-guard';
+import type { Estudante } from '@/types/estudante';
 
 interface Avaliacao {
   id: string;
@@ -45,14 +45,14 @@ export default function DetalheAlunoPage() {
     isLoading: authLoading,
     isAuthenticated,
     hasRole,
-  } = useRoleGuard(["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"]);
+  } = useRoleGuard(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO']);
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [aluno, setAluno] = useState<Estudante | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [loadingAvaliacoes, setLoadingAvaliacoes] = useState(true);
 
@@ -64,7 +64,7 @@ export default function DetalheAlunoPage() {
         const res = await fetch(`/api/alunos/${id}`);
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          setError(j.message || "Falha ao carregar aluno");
+          setError(j.message || 'Falha ao carregar aluno');
           setLoading(false);
           return;
         }
@@ -72,7 +72,7 @@ export default function DetalheAlunoPage() {
         setAluno(data);
         setLoading(false);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro inesperado");
+        setError(e instanceof Error ? e.message : 'Erro inesperado');
         setLoading(false);
       }
     }
@@ -85,7 +85,7 @@ export default function DetalheAlunoPage() {
           setAvaliacoes(data);
         }
       } catch (e) {
-        console.error("Erro ao carregar avaliações:", e);
+        console.error('Erro ao carregar avaliações:', e);
       } finally {
         setLoadingAvaliacoes(false);
       }
@@ -119,20 +119,20 @@ export default function DetalheAlunoPage() {
   if (error || !aluno) {
     return (
       <Container maxWidth="lg" sx={{ py: 2 }}>
-        <Card variant="outlined" sx={{ borderColor: "error.light" }}>
+        <Card variant="outlined" sx={{ borderColor: 'error.light' }}>
           <CardContent>
             <Typography variant="subtitle2" color="error" gutterBottom>
               Erro
             </Typography>
             <Typography variant="body2" color="error.main">
-              {error || "Aluno não encontrado"}
+              {error || 'Aluno não encontrado'}
             </Typography>
           </CardContent>
         </Card>
         <Box mt={2}>
           <Button
             variant="outlined"
-            onClick={() => router.push("/dashboard/alunos")}
+            onClick={() => router.push('/dashboard/alunos')}
           >
             Voltar para lista
           </Button>
@@ -171,7 +171,7 @@ export default function DetalheAlunoPage() {
           </Button>
           <Button
             variant="outlined"
-            onClick={() => router.push("/dashboard/alunos")}
+            onClick={() => router.push('/dashboard/alunos')}
           >
             Voltar
           </Button>
@@ -201,13 +201,13 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Email
               </Typography>
-              <Typography variant="body1">{aluno.email || "-"}</Typography>
+              <Typography variant="body1">{aluno.email || '-'}</Typography>
             </Box>
             <Box flex="1 1 200px">
               <Typography variant="caption" color="text.secondary">
                 Telefone
               </Typography>
-              <Typography variant="body1">{aluno.telefone || "-"}</Typography>
+              <Typography variant="body1">{aluno.telefone || '-'}</Typography>
             </Box>
           </Box>
         </CardContent>
@@ -238,13 +238,13 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Turma
               </Typography>
-              <Typography variant="body1">{aluno.turma || "-"}</Typography>
+              <Typography variant="body1">{aluno.turma || '-'}</Typography>
             </Box>
             <Box flex="1 1 200px">
               <Typography variant="caption" color="text.secondary">
                 Curso
               </Typography>
-              <Typography variant="body1">{aluno.curso || "-"}</Typography>
+              <Typography variant="body1">{aluno.curso || '-'}</Typography>
             </Box>
           </Box>
         </CardContent>
@@ -260,11 +260,11 @@ export default function DetalheAlunoPage() {
             <Chip
               label={
                 aluno.isSpecialNeeds
-                  ? "Possui necessidades especiais"
-                  : "Não possui necessidades especiais"
+                  ? 'Possui necessidades especiais'
+                  : 'Não possui necessidades especiais'
               }
-              color={aluno.isSpecialNeeds ? "warning" : "default"}
-              variant={aluno.isSpecialNeeds ? "filled" : "outlined"}
+              color={aluno.isSpecialNeeds ? 'warning' : 'default'}
+              variant={aluno.isSpecialNeeds ? 'filled' : 'outlined'}
             />
           </Box>
           {aluno.isSpecialNeeds && aluno.specialNeedsDetails && (
@@ -272,7 +272,7 @@ export default function DetalheAlunoPage() {
               <Typography variant="caption" color="text.secondary">
                 Detalhes
               </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                 {aluno.specialNeedsDetails}
               </Typography>
             </Box>
@@ -304,7 +304,7 @@ export default function DetalheAlunoPage() {
                     <Chip key={ap} label={ap} color="primary" size="small" />
                   ))}
                 </Stack>
-                {aluno.apoioOutros && aluno.apoioOutros.trim() !== "" && (
+                {aluno.apoioOutros && aluno.apoioOutros.trim() !== '' && (
                   <Typography variant="body2" mt={1}>
                     Outros: {aluno.apoioOutros}
                   </Typography>
@@ -329,9 +329,9 @@ export default function DetalheAlunoPage() {
                     <TableBody>
                       {aluno.equipePedagogica.map((m) => (
                         <TableRow key={m.id}>
-                          <TableCell>{m.nome || "-"}</TableCell>
-                          <TableCell>{m.funcao || "-"}</TableCell>
-                          <TableCell>{m.contato || "-"}</TableCell>
+                          <TableCell>{m.nome || '-'}</TableCell>
+                          <TableCell>{m.funcao || '-'}</TableCell>
+                          <TableCell>{m.contato || '-'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -341,12 +341,12 @@ export default function DetalheAlunoPage() {
             ) : null}
             {/* Objetivos */}
             {aluno.objetivosAvaliacao &&
-              aluno.objetivosAvaliacao.trim() !== "" && (
+              aluno.objetivosAvaliacao.trim() !== '' && (
                 <Box mb={2}>
                   <Typography variant="subtitle2" gutterBottom>
                     Objetivos da Avaliação
                   </Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     {aluno.objetivosAvaliacao}
                   </Typography>
                 </Box>
@@ -362,7 +362,7 @@ export default function DetalheAlunoPage() {
                 {aluno.conhecimentoEstudante && (
                   <Typography
                     variant="body2"
-                    sx={{ whiteSpace: "pre-wrap" }}
+                    sx={{ whiteSpace: 'pre-wrap' }}
                     mb={1}
                   >
                     {aluno.conhecimentoEstudante}
@@ -371,14 +371,14 @@ export default function DetalheAlunoPage() {
                 {aluno.conhecimentoMultiplasFormas && (
                   <Typography
                     variant="body2"
-                    sx={{ whiteSpace: "pre-wrap" }}
+                    sx={{ whiteSpace: 'pre-wrap' }}
                     mb={1}
                   >
                     Múltiplas Formas: {aluno.conhecimentoMultiplasFormas}
                   </Typography>
                 )}
                 {aluno.conhecimentoDescricao && (
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     Detalhamento: {aluno.conhecimentoDescricao}
                   </Typography>
                 )}
@@ -386,12 +386,12 @@ export default function DetalheAlunoPage() {
             )}
             {/* Planificação */}
             {aluno.planificacaoDescricao &&
-              aluno.planificacaoDescricao.trim() !== "" && (
+              aluno.planificacaoDescricao.trim() !== '' && (
                 <Box mb={2}>
                   <Typography variant="subtitle2" gutterBottom>
                     Planificação Interdisciplinar
                   </Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     {aluno.planificacaoDescricao}
                   </Typography>
                 </Box>
@@ -407,7 +407,7 @@ export default function DetalheAlunoPage() {
                 {aluno.intervencaoPreliminar && (
                   <Typography
                     variant="body2"
-                    sx={{ whiteSpace: "pre-wrap" }}
+                    sx={{ whiteSpace: 'pre-wrap' }}
                     mb={1}
                   >
                     Preliminar: {aluno.intervencaoPreliminar}
@@ -416,26 +416,26 @@ export default function DetalheAlunoPage() {
                 {aluno.intervencaoCompreensiva && (
                   <Typography
                     variant="body2"
-                    sx={{ whiteSpace: "pre-wrap" }}
+                    sx={{ whiteSpace: 'pre-wrap' }}
                     mb={1}
                   >
                     Compreensiva: {aluno.intervencaoCompreensiva}
                   </Typography>
                 )}
                 {aluno.intervencaoTransicional && (
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     Transicional: {aluno.intervencaoTransicional}
                   </Typography>
                 )}
               </Box>
             )}
             {/* Observações */}
-            {aluno.observacoes && aluno.observacoes.trim() !== "" && (
+            {aluno.observacoes && aluno.observacoes.trim() !== '' && (
               <Box mb={1}>
                 <Typography variant="subtitle2" gutterBottom>
                   Observações
                 </Typography>
-                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                   {aluno.observacoes}
                 </Typography>
               </Box>
@@ -502,17 +502,17 @@ export default function DetalheAlunoPage() {
                 </TableHead>
                 <TableBody>
                   {avaliacoes.map((av) => {
-                    let proximaData = "-";
+                    let proximaData = '-';
                     if (av.periodoReavaliacao && av.data) {
                       const prox = new Date(av.data);
                       prox.setDate(prox.getDate() + av.periodoReavaliacao);
-                      proximaData = prox.toLocaleDateString("pt-BR");
+                      proximaData = prox.toLocaleDateString('pt-BR');
                     }
 
                     return (
                       <TableRow key={av.id}>
                         <TableCell>
-                          {new Date(av.data).toLocaleDateString("pt-BR")}
+                          {new Date(av.data).toLocaleDateString('pt-BR')}
                         </TableCell>
                         <TableCell>
                           {av.avaliador ? (
@@ -528,7 +528,7 @@ export default function DetalheAlunoPage() {
                               </Typography>
                             </Box>
                           ) : (
-                            "-"
+                            '-'
                           )}
                         </TableCell>
                         <TableCell>
@@ -536,9 +536,9 @@ export default function DetalheAlunoPage() {
                             variant="body2"
                             sx={{
                               maxWidth: 300,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
                             }}
                             title={av.descricao}
                           >
@@ -550,13 +550,13 @@ export default function DetalheAlunoPage() {
                             variant="body2"
                             sx={{
                               maxWidth: 200,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
                             }}
-                            title={av.evolucao || "-"}
+                            title={av.evolucao || '-'}
                           >
-                            {av.evolucao || "-"}
+                            {av.evolucao || '-'}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -564,13 +564,13 @@ export default function DetalheAlunoPage() {
                             variant="body2"
                             sx={{
                               maxWidth: 200,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
                             }}
-                            title={av.dificuldades || "-"}
+                            title={av.dificuldades || '-'}
                           >
-                            {av.dificuldades || "-"}
+                            {av.dificuldades || '-'}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -578,15 +578,15 @@ export default function DetalheAlunoPage() {
                             label={proximaData}
                             size="small"
                             color={
-                              proximaData !== "-" &&
+                              proximaData !== '-' &&
                               new Date(
-                                proximaData.split("/").reverse().join("-")
+                                proximaData.split('/').reverse().join('-'),
                               ) < new Date()
-                                ? "error"
-                                : "default"
+                                ? 'error'
+                                : 'default'
                             }
                             variant={
-                              proximaData !== "-" ? "filled" : "outlined"
+                              proximaData !== '-' ? 'filled' : 'outlined'
                             }
                           />
                         </TableCell>

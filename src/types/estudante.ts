@@ -57,11 +57,11 @@ export interface Estudante {
 // Tipo para payload de criação/atualização (PUT) - sem campos de auditoria
 export type EstudanteInput = Omit<
   Estudante,
-  | "id"
-  | "criado"
-  | "criadoPor"
-  | "atualizado"
-  | "atualizadoPor"
-  | "isActive"
-  | "avaliacoes"
+  | 'id'
+  | 'criado'
+  | 'criadoPor'
+  | 'atualizado'
+  | 'atualizadoPor'
+  | 'isActive'
+  | 'avaliacoes'
 >;

@@ -1,10 +1,10 @@
-import prisma from "@/lib/prisma";
-import { limparCPF, validarCPF } from "@/lib/validators";
-import { hash } from "bcrypt";
-import type { JWT } from "next-auth/jwt";
-import { getToken } from "next-auth/jwt";
-import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { hash } from 'bcrypt';
+import { type NextRequest, NextResponse } from 'next/server';
+import type { JWT } from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
+import { z } from 'zod';
+import prisma from '@/lib/prisma';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
 type TokenLike = JWT & { tipo?: string };
 
@@ -15,39 +15,39 @@ export async function POST(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     // Verificar se é admin
     const userType = (token as TokenLike).tipo;
-    if (userType !== "ADMIN") {
+    if (userType !== 'ADMIN') {
       return NextResponse.json(
-        { error: "Apenas administradores podem criar usuários" },
-        { status: 403 }
+        { error: 'Apenas administradores podem criar usuários' },
+        { status: 403 },
       );
     }
 
     const body = await req.json();
 
     const schema = z.object({
-      nome: z.string().min(2, "Nome muito curto"),
-      email: z.string().email("Email inválido"),
-      senha: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-      tipo: z.enum(["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"]),
-      cpf: z.string().min(11, "CPF incompleto"), // antes da sanitização
+      nome: z.string().min(2, 'Nome muito curto'),
+      email: z.string().email('Email inválido'),
+      senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+      tipo: z.enum(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO']),
+      cpf: z.string().min(11, 'CPF incompleto'), // antes da sanitização
     });
 
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         {
-          error: "Dados inválidos",
+          error: 'Dados inválidos',
           issues: parsed.error.issues.map((i) => ({
             path: i.path,
             message: i.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,10 +56,10 @@ export async function POST(req: NextRequest) {
     if (!validarCPF(cpfL)) {
       return NextResponse.json(
         {
-          error: "CPF inválido",
-          issues: [{ path: ["cpf"], message: "CPF inválido" }],
+          error: 'CPF inválido',
+          issues: [{ path: ['cpf'], message: 'CPF inválido' }],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -72,8 +72,8 @@ export async function POST(req: NextRequest) {
 
     if (usuarioExistente) {
       return NextResponse.json(
-        { error: "Email ou CPF já cadastrado", code: "USUARIO_DUPLICADO" },
-        { status: 409 }
+        { error: 'Email ou CPF já cadastrado', code: 'USUARIO_DUPLICADO' },
+        { status: 409 },
       );
     }
 
@@ -88,8 +88,8 @@ export async function POST(req: NextRequest) {
         senhaHash,
         tipo,
         cpf: cpfL,
-        criadoPor: "sistema",
-        atualizadoPor: "sistema",
+        criadoPor: 'sistema',
+        atualizadoPor: 'sistema',
       },
       select: {
         id: true,
@@ -103,10 +103,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(usuario, { status: 201 });
   } catch (error) {
-    console.error("Erro ao criar usuário:", error);
+    console.error('Erro ao criar usuário:', error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
+      { error: 'Erro interno do servidor' },
+      { status: 500 },
     );
   }
 }
@@ -118,15 +118,15 @@ export async function GET(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     // Verificar se é admin
     const userType = (token as TokenLike).tipo;
-    if (userType !== "ADMIN") {
+    if (userType !== 'ADMIN') {
       return NextResponse.json(
-        { error: "Apenas administradores podem listar usuários" },
-        { status: 403 }
+        { error: 'Apenas administradores podem listar usuários' },
+        { status: 403 },
       );
     }
 
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
         atualizadoPor: true,
         isActive: true,
       },
-      orderBy: { criado: "desc" },
+      orderBy: { criado: 'desc' },
     });
 
     // Buscar nomes dos usuários que criaram/atualizaram
@@ -178,10 +178,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(usuariosComNomes);
   } catch (error) {
-    console.error("Erro ao listar usuários:", error);
+    console.error('Erro ao listar usuários:', error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
+      { error: 'Erro interno do servidor' },
+      { status: 500 },
     );
   }
 }

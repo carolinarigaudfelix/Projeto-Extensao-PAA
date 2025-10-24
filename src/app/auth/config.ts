@@ -1,9 +1,9 @@
-import prisma from "@/lib/prisma";
-import { compare } from "bcrypt";
-import type { NextAuthConfig, User } from "next-auth";
-import { CredentialsSignin } from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import Credentials from "next-auth/providers/credentials";
+import { compare } from 'bcrypt';
+import type { NextAuthConfig, User } from 'next-auth';
+import { CredentialsSignin } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
+import Credentials from 'next-auth/providers/credentials';
+import prisma from '@/lib/prisma';
 
 // Fallback seguro para ambiente de desenvolvimento caso NEXTAUTH_SECRET não esteja definido.
 // Em produção, a variável de ambiente DEVE estar presente.
@@ -13,28 +13,28 @@ function getAuthSecret(): string {
   }
   // Gerar secret pseudo-aleatório em dev para evitar MissingSecret.
   // Não persistente entre reinícios, apenas evita crash.
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== 'production') {
     const random = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
     return `dev-${random}`;
   }
   throw new Error(
-    "NEXTAUTH_SECRET não definido em produção. Configure no arquivo .env"
+    'NEXTAUTH_SECRET não definido em produção. Configure no arquivo .env',
   );
 }
 
 // Configuração NextAuth v5
 export const authConfig: NextAuthConfig = {
   secret: getAuthSecret(),
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/login' },
   providers: [
     Credentials({
-      name: "Credenciais",
+      name: 'Credenciais',
       credentials: {
-        email: { label: "Email", type: "email" },
-        senha: { label: "Senha", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        senha: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
         const email = credentials?.email?.toString();
@@ -42,7 +42,7 @@ export const authConfig: NextAuthConfig = {
 
         if (!(email && senha)) {
           const error = new CredentialsSignin();
-          error.code = "Email e senha são obrigatórios";
+          error.code = 'Email e senha são obrigatórios';
           throw error;
         }
 
@@ -51,19 +51,19 @@ export const authConfig: NextAuthConfig = {
         if (!usuario) {
           // Mensagem explícita para o cliente
           const error = new CredentialsSignin();
-          error.code = "Nenhum usuário encontrado com este email";
+          error.code = 'Nenhum usuário encontrado com este email';
           throw error;
         }
 
         if (!usuario.senhaHash) {
           const error = new CredentialsSignin();
-          error.code = "Usuário sem senha configurada";
+          error.code = 'Usuário sem senha configurada';
           throw error;
         }
 
         if (!usuario.isActive) {
           const error = new CredentialsSignin();
-          error.code = "Usuário inativo. Entre em contato com o administrador";
+          error.code = 'Usuário inativo. Entre em contato com o administrador';
           throw error;
         }
 
@@ -72,7 +72,7 @@ export const authConfig: NextAuthConfig = {
         if (!senhaCorreta) {
           // Mensagem explícita para o cliente
           const error = new CredentialsSignin();
-          error.code = "Email ou senha incorretos";
+          error.code = 'Email ou senha incorretos';
           throw error;
         }
 
@@ -103,10 +103,10 @@ export const authConfig: NextAuthConfig = {
       const emailFromToken = (token as JWT & { email?: string }).email;
       session.user = {
         ...session.user,
-        id: t.id || "",
-        nome: t.nome || session.user?.name || "",
-        tipo: t.tipo || "",
-        email: session.user?.email || emailFromToken || "",
+        id: t.id || '',
+        nome: t.nome || session.user?.name || '',
+        tipo: t.tipo || '',
+        email: session.user?.email || emailFromToken || '',
       };
       return session;
     },

@@ -2,12 +2,12 @@
 // Este arquivo existe apenas para evitar erros 404 no console do navegador
 // quando o navegador tenta buscar por um service worker automaticamente
 
-self.addEventListener("install", () => {
+self.addEventListener('install', () => {
   // Service worker instalado
   self.skipWaiting();
 });
 
-self.addEventListener("activate", () => {
+self.addEventListener('activate', () => {
   // Service worker ativado
   self.clients.claim();
 });

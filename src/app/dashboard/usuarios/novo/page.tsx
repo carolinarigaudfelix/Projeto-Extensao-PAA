@@ -1,12 +1,9 @@
-"use client";
+'use client';
 
-import { CPFInput } from "@/components/CPFInput";
-import { useRoleGuard } from "@/lib/route-guard";
-import { limparCPF, validarCPF } from "@/lib/validators";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import {
   Box,
   Button,
@@ -19,46 +16,49 @@ import {
   Paper,
   TextField,
   Typography,
-} from "@mui/material";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+} from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
+import { CPFInput } from '@/components/CPFInput';
+import { useRoleGuard } from '@/lib/route-guard';
+import { limparCPF, validarCPF } from '@/lib/validators';
 
-const tiposValidos = ["ADMIN", "COORDENADOR", "PROFESSOR", "PEDAGOGO"] as const;
+const tiposValidos = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'PEDAGOGO'] as const;
 
 const baseSchema = z.object({
-  nome: z.string().min(2, "Nome muito curto"),
-  email: z.string().email("Email inválido"),
-  senha: z.string().min(6, "Senha muito curta"),
-  cpf: z.string().min(11, "CPF incompleto"),
+  nome: z.string().min(2, 'Nome muito curto'),
+  email: z.string().email('Email inválido'),
+  senha: z.string().min(6, 'Senha muito curta'),
+  cpf: z.string().min(11, 'CPF incompleto'),
   tipo: z.enum(tiposValidos),
 });
 
 type FormValues = z.infer<typeof baseSchema> & { draft: boolean };
 
 export default function NovoUsuarioWizardPage() {
-  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(["ADMIN"]);
+  const { isLoading, isAuthenticated, hasRole } = useRoleGuard(['ADMIN']);
   const router = useRouter();
 
   const [form, setForm] = useState<FormValues>({
-    nome: "",
-    email: "",
-    senha: "",
-    cpf: "",
-    tipo: "PROFESSOR",
+    nome: '',
+    email: '',
+    senha: '',
+    cpf: '',
+    tipo: 'PROFESSOR',
     draft: false,
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [draftMessage, setDraftMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [draftMessage, setDraftMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [step, setStep] = useState(0);
 
   // Carregar rascunho
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("wizardUsuarioDraft");
+      const raw = localStorage.getItem('wizardUsuarioDraft');
       if (raw) {
         const parsed = JSON.parse(raw);
         setForm((prev) => ({ ...prev, ...parsed }));
@@ -67,7 +67,7 @@ export default function NovoUsuarioWizardPage() {
   }, []);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -76,25 +76,25 @@ export default function NovoUsuarioWizardPage() {
   function salvarRascunho() {
     try {
       localStorage.setItem(
-        "wizardUsuarioDraft",
+        'wizardUsuarioDraft',
         JSON.stringify({
           ...form,
           draft: true,
           savedAt: new Date().toISOString(),
-        })
+        }),
       );
       setForm((prev) => ({ ...prev, draft: true }));
-      setDraftMessage("Rascunho salvo.");
-      setTimeout(() => setDraftMessage(""), 4000);
+      setDraftMessage('Rascunho salvo.');
+      setTimeout(() => setDraftMessage(''), 4000);
     } catch {
-      setError("Falha ao salvar rascunho local.");
+      setError('Falha ao salvar rascunho local.');
     }
   }
 
   const totalSteps = 4;
   const progressPercent = useMemo(
     () => Math.round(((step + 1 - 1) / (totalSteps - 1)) * 100),
-    [step]
+    [step],
   );
 
   function nextStep() {
@@ -106,8 +106,8 @@ export default function NovoUsuarioWizardPage() {
 
   async function handleSubmit(e: React.FormEvent, draft = false) {
     e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+    setError('');
+    setSuccessMessage('');
     setFieldErrors({});
     setSaving(true);
 
@@ -131,31 +131,31 @@ export default function NovoUsuarioWizardPage() {
     // Validar CPF sanitizado
     const cpfL = limparCPF(parsed.data.cpf);
     if (!validarCPF(cpfL)) {
-      setFieldErrors((f) => ({ ...f, cpf: "CPF inválido" }));
+      setFieldErrors((f) => ({ ...f, cpf: 'CPF inválido' }));
       setSaving(false);
       return;
     }
 
     try {
-      const res = await fetch("/api/usuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...parsed.data, cpf: cpfL }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.error || "Falha ao criar usuário");
+        setError(j.error || 'Falha ao criar usuário');
         setSaving(false);
         return;
       }
-      localStorage.removeItem("wizardUsuarioDraft");
-      setSuccessMessage("Usuário criado com sucesso. Redirecionando...");
+      localStorage.removeItem('wizardUsuarioDraft');
+      setSuccessMessage('Usuário criado com sucesso. Redirecionando...');
       setTimeout(() => {
-        router.push("/dashboard/usuarios");
+        router.push('/dashboard/usuarios');
         router.refresh();
       }, 900);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro inesperado");
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
       setSaving(false);
     }
   }
@@ -203,7 +203,7 @@ export default function NovoUsuarioWizardPage() {
         onChange={handleChange}
         fullWidth
         required
-        helperText={fieldErrors.cpf || "Digite o CPF (000.000.000-00)"}
+        helperText={fieldErrors.cpf || 'Digite o CPF (000.000.000-00)'}
         error={Boolean(fieldErrors.cpf)}
       />
     </Box>,
@@ -218,7 +218,7 @@ export default function NovoUsuarioWizardPage() {
         fullWidth
         required
         error={Boolean(fieldErrors.senha)}
-        helperText={fieldErrors.senha || "Mínimo 6 caracteres"}
+        helperText={fieldErrors.senha || 'Mínimo 6 caracteres'}
       />
     </Box>,
     // 3. Perfil
@@ -248,13 +248,13 @@ export default function NovoUsuarioWizardPage() {
       </Typography>
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Typography variant="body2" gutterBottom>
-          <strong>Nome:</strong> {form.nome || "(não informado)"}
+          <strong>Nome:</strong> {form.nome || '(não informado)'}
         </Typography>
         <Typography variant="body2" gutterBottom>
-          <strong>Email:</strong> {form.email || "(não informado)"}
+          <strong>Email:</strong> {form.email || '(não informado)'}
         </Typography>
         <Typography variant="body2" gutterBottom>
-          <strong>CPF:</strong> {form.cpf || "(não informado)"}
+          <strong>CPF:</strong> {form.cpf || '(não informado)'}
         </Typography>
         <Typography variant="body2" gutterBottom>
           <strong>Tipo:</strong> {form.tipo}
@@ -268,17 +268,17 @@ export default function NovoUsuarioWizardPage() {
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 3 } }}>
-      <Card elevation={3} sx={{ overflow: "hidden" }}>
+      <Card elevation={3} sx={{ overflow: 'hidden' }}>
         <Box
           sx={{
-            bgcolor: "primary.dark",
-            color: "primary.contrastText",
+            bgcolor: 'primary.dark',
+            color: 'primary.contrastText',
             px: 2.5,
             py: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
             gap: 2,
           }}
         >
@@ -311,7 +311,7 @@ export default function NovoUsuarioWizardPage() {
             {error && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.4, mb: 2, borderColor: "error.light" }}
+                sx={{ p: 1.4, mb: 2, borderColor: 'error.light' }}
               >
                 <Typography variant="subtitle2" color="error" gutterBottom>
                   Erro
@@ -324,7 +324,7 @@ export default function NovoUsuarioWizardPage() {
             {draftMessage && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.2, mb: 2, borderColor: "primary.light" }}
+                sx={{ p: 1.2, mb: 2, borderColor: 'primary.light' }}
               >
                 <Typography variant="subtitle2" color="primary" gutterBottom>
                   Rascunho
@@ -335,7 +335,7 @@ export default function NovoUsuarioWizardPage() {
             {successMessage && (
               <Paper
                 variant="outlined"
-                sx={{ p: 1.2, mb: 2, borderColor: "success.light" }}
+                sx={{ p: 1.2, mb: 2, borderColor: 'success.light' }}
               >
                 <Typography
                   variant="subtitle2"
@@ -354,7 +354,7 @@ export default function NovoUsuarioWizardPage() {
         <CardContent sx={{ pt: 0, px: 2.5, pb: 3 }}>
           <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
             {
-              ["1. Identificação", "2. Credenciais", "3. Perfil", "4. Revisão"][
+              ['1. Identificação', '2. Credenciais', '3. Perfil', '4. Revisão'][
                 step
               ]
             }
@@ -419,7 +419,7 @@ export default function NovoUsuarioWizardPage() {
                     type="submit"
                     disabled={saving}
                   >
-                    {saving ? "Salvando..." : "Finalizar"}
+                    {saving ? 'Salvando...' : 'Finalizar'}
                   </Button>
                 </Box>
               )}
