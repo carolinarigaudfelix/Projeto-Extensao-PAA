@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Busca as avaliações do aluno, mais recentes primeiro
     const avaliacoes = await prisma.avaliacao.findMany({
-      where: { estudanteId: params.id },
+      where: { estudanteId: id },
       orderBy: { data: "desc" },
       include: {
         avaliador: { select: { nome: true, cargo: true } },

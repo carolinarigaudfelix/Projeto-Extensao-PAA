@@ -10,9 +10,9 @@ Alguns navegadores (especialmente Chrome/Edge) tentam automaticamente buscar um 
 
 ## Solução Implementada
 
-Foram criadas **duas soluções** para resolver o erro 404:
+Foi criado um **service worker estático vazio** em `/public/service-worker.js`.
 
-### 1. Service Worker estático em `/public`
+### Service Worker estático em `/public`
 
 **Arquivo:** `public/service-worker.js`
 
@@ -29,24 +29,14 @@ self.addEventListener('activate', () => {
 });
 ```
 
-### 2. Rota API dinâmica
+### ⚠️ Importante: Conflito Evitado
 
-**Arquivo:** `src/app/service-worker.js/route.ts`
-
-Uma rota Next.js que retorna dinamicamente um service worker vazio quando requisitado.
-
-```typescript
-export async function GET() {
-  const serviceWorkerCode = `...`;
-  return new NextResponse(serviceWorkerCode, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/javascript',
-      'Cache-Control': 'public, max-age=0, must-revalidate',
-    },
-  });
-}
+**Não crie uma rota API** em `src/app/service-worker.js/route.ts` pois isso causa o erro:
 ```
+⨯ A conflicting public file and page file was found for path /service-worker.js
+```
+
+O arquivo estático em `/public` é suficiente e evita conflitos.
 
 ## Por que não usar um Service Worker completo?
 
@@ -63,8 +53,7 @@ Este projeto **não necessita** de um Service Worker porque:
 Se preferir **não ter** service worker algum:
 
 1. Delete `public/service-worker.js`
-2. Delete `src/app/service-worker.js/route.ts`
-3. O erro 404 voltará a aparecer, mas é **inofensivo**
+2. O erro 404 voltará a aparecer, mas é **inofensivo**
 
 ## Se quiser implementar PWA no futuro
 
@@ -96,6 +85,7 @@ Para transformar em PWA completa:
 - ✅ Erro 404 resolvido
 - ✅ Console limpo
 - ✅ Sem impacto na performance
+- ✅ Sem conflitos de rotas
 - ✅ Pronto para PWA futura se necessário
 
 ## Referências
@@ -103,3 +93,4 @@ Para transformar em PWA completa:
 - [Next.js PWA](https://github.com/shadowwalker/next-pwa)
 - [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [Progressive Web Apps](https://web.dev/progressive-web-apps/)
+- [Next.js Conflicting Public Files](https://nextjs.org/docs/messages/conflicting-public-file-page)
