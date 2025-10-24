@@ -158,6 +158,11 @@ export default function UsuariosDashboardPage() {
               <TableCell>Email</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>CPF</TableCell>
+              <TableCell>Criado em</TableCell>
+              <TableCell>Criado por</TableCell>
+              <TableCell>Atualizado em</TableCell>
+              <TableCell>Atualizado por</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell align="right">Ações</TableCell>
             </TableRow>
           </TableHead>
@@ -165,14 +170,14 @@ export default function UsuariosDashboardPage() {
             {loading ? (
               ["a", "b", "c"].map((id) => (
                 <TableRow key={`skeleton-${id}`}>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={10}>
                     <Skeleton height={32} />
                   </TableCell>
                 </TableRow>
               ))
             ) : usuarios.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={10}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -197,6 +202,25 @@ export default function UsuariosDashboardPage() {
                   </TableCell>
                   <TableCell>
                     {usuario.cpf ? mascararCPF(usuario.cpf) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {usuario.criado
+                      ? new Date(usuario.criado).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {usuario.criadoPorNome || usuario.criadoPor || "-"}
+                  </TableCell>
+                  <TableCell>
+                    {usuario.atualizado
+                      ? new Date(usuario.atualizado).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {usuario.atualizadoPorNome || usuario.atualizadoPor || "-"}
+                  </TableCell>
+                  <TableCell>
+                    {usuario.isActive ? "Ativo" : "Inativo"}
                   </TableCell>
                   <TableCell align="right">
                     <Button

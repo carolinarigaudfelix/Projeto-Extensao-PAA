@@ -42,7 +42,37 @@ export async function GET(req: Request) {
       orderBy: { nome: "asc" },
     });
 
-    return NextResponse.json(estudantes);
+    // Buscar nomes dos usuários que criaram/atualizaram
+    // Filtrar apenas IDs válidos (ObjectId do MongoDB tem 24 caracteres hexadecimais)
+    const usuarioIds = new Set<string>();
+    estudantes.forEach((e) => {
+      if (e.criadoPor && e.criadoPor.length === 24) usuarioIds.add(e.criadoPor);
+      if (e.atualizadoPor && e.atualizadoPor.length === 24)
+        usuarioIds.add(e.atualizadoPor);
+    });
+
+    const usuarios =
+      usuarioIds.size > 0
+        ? await prisma.usuario.findMany({
+            where: { id: { in: Array.from(usuarioIds) } },
+            select: { id: true, nome: true },
+          })
+        : [];
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.id, u.nome]));
+
+    // Enriquecer estudantes com nomes dos usuários
+    const estudantesComNomes = estudantes.map((e) => ({
+      ...e,
+      criadoPorNome: e.criadoPor
+        ? usuariosMap.get(e.criadoPor) || e.criadoPor
+        : null,
+      atualizadoPorNome: e.atualizadoPor
+        ? usuariosMap.get(e.atualizadoPor) || e.atualizadoPor
+        : null,
+    }));
+
+    return NextResponse.json(estudantesComNomes);
   } catch (error) {
     console.error("Erro ao buscar estudantes:", error);
     return NextResponse.json(
@@ -115,13 +145,23 @@ export async function POST(req: Request) {
     const payload = token as unknown as TokenPayload;
     const { apoioEducacional, equipePedagogica, ...rest } = parsed.data;
 
+    // Monta membro da equipe pedagógica com usuário autenticado
+    const membroAtual = {
+      id: payload.id,
+      nome: payload.nome || "",
+      funcao: payload.tipo,
+    };
+    // Garante que não haja duplicidade do usuário
+    let equipeFinal = equipePedagogica || [];
+    if (!equipeFinal.some((m) => m.id === membroAtual.id)) {
+      equipeFinal = [...equipeFinal, membroAtual];
+    }
+
     const novoEstudante = await prisma.estudante.create({
       data: {
         ...rest,
         apoioEducacional: apoioEducacional ?? [],
-        equipePedagogica: equipePedagogica?.length
-          ? equipePedagogica
-          : undefined,
+        equipePedagogica: equipeFinal.length ? equipeFinal : [membroAtual],
         criadoPor: payload.id,
         atualizadoPor: payload.id,
       },

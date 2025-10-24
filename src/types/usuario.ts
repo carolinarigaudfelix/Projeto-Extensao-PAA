@@ -9,7 +9,11 @@ export interface Usuario {
   telefone?: string | null; // caso futuro
   tipo: "ADMIN" | "COORDENADOR" | "PROFESSOR" | "PEDAGOGO";
   criado?: string; // ISO
+  criadoPor?: string;
+  criadoPorNome?: string | null; // Nome do usuário que criou
   atualizado?: string; // ISO
+  atualizadoPor?: string;
+  atualizadoPorNome?: string | null; // Nome do usuário que atualizou
   isActive?: boolean;
 }
 

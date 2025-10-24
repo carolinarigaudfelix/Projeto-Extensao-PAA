@@ -34,6 +34,9 @@ export default function EditarUsuarioPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Estado controlado para o campo tipo
+  const [tipo, setTipo] = useState<string>("");
+
   const userId = Array.isArray(params?.id)
     ? params.id[0]
     : (params?.id as string | undefined);
@@ -46,6 +49,7 @@ export default function EditarUsuarioPage() {
       if (!res.ok) throw new Error("Falha ao carregar usuário");
       const data = await res.json();
       setUsuario(data);
+      setTipo(data.tipo || "");
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro inesperado");
@@ -73,8 +77,7 @@ export default function EditarUsuarioPage() {
         payload.nome = entries.nome;
       if (entries.email && entries.email !== usuario.email)
         payload.email = entries.email;
-      if (entries.tipo && entries.tipo !== usuario.tipo)
-        payload.tipo = entries.tipo;
+      if (tipo && tipo !== usuario.tipo) payload.tipo = tipo;
       if (entries.cpf && entries.cpf !== usuario.cpf) {
         const cpfL = limparCPF(String(entries.cpf));
         if (!validarCPF(cpfL)) {
@@ -174,7 +177,8 @@ export default function EditarUsuarioPage() {
         <TextField
           name="tipo"
           label="Tipo"
-          defaultValue={usuario.tipo}
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value)}
           required
           select
           fullWidth

@@ -118,13 +118,16 @@ model Avaliacao {
   isActive      Boolean  @default(true)
 
   // Conteúdo da avaliação
-  data      DateTime
-  descricao String
+  data               DateTime
+  descricao          String
+  evolucao           String?
+  dificuldades       String?
+  periodoReavaliacao Int? // em dias
 
   // Relacionamentos
   estudante   Estudante @relation(fields: [estudanteId], references: [id])
   estudanteId String    @db.ObjectId
 
-  avaliador   MembroPedagogico @relation(fields: [avaliadorId], references: [id])
-  avaliadorId String           @db.ObjectId
+  avaliador   MembroPedagogico? @relation(fields: [avaliadorId], references: [id])
+  avaliadorId String?           @db.ObjectId
 }

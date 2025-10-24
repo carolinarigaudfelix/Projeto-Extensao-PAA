@@ -1,7 +1,12 @@
 "use client";
 
 import { useRoleGuard } from "@/lib/route-guard";
-import type { Estudante } from "@/types/estudante";
+import type { EquipePedagogicaMembro, Estudante } from "@/types/estudante";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import {
   Box,
   Button,
@@ -11,15 +16,24 @@ import {
   CircularProgress,
   Container,
   FormControlLabel,
-  Skeleton,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
-const schema = z.object({
+// Schema igual ao de novo aluno
+const baseSchema = z.object({
   nome: z.string().min(2, "Nome muito curto"),
   idade: z.coerce.number().int().min(1, "Idade inválida"),
   matricula: z.string().min(3, "Matrícula muito curta"),
@@ -32,7 +46,29 @@ const schema = z.object({
   specialNeedsDetails: z.string().optional().or(z.literal("")),
 });
 
-type FormValues = z.infer<typeof schema>;
+type EquipeMembro = {
+  id: string;
+  nome: string;
+  funcao: string;
+  contato: string;
+};
+
+interface WizardExtra {
+  apoioEducacional: string[];
+  apoioOutros: string;
+  equipePedagogica: EquipeMembro[];
+  objetivosAvaliacao: string;
+  conhecimentoEstudante: string;
+  conhecimentoMultiplasFormas: string;
+  conhecimentoDescricao: string;
+  planificacaoDescricao: string;
+  intervencaoPreliminar: string;
+  intervencaoCompreensiva: string;
+  intervencaoTransicional: string;
+  observacoes: string;
+}
+
+type FormValues = z.infer<typeof baseSchema> & WizardExtra;
 
 export default function EditarAlunoPage() {
   const {
@@ -56,14 +92,26 @@ export default function EditarAlunoPage() {
     curso: "",
     isSpecialNeeds: false,
     specialNeedsDetails: "",
+    apoioEducacional: [],
+    apoioOutros: "",
+    equipePedagogica: [],
+    objetivosAvaliacao: "",
+    conhecimentoEstudante: "",
+    conhecimentoMultiplasFormas: "",
+    conhecimentoDescricao: "",
+    planificacaoDescricao: "",
+    intervencaoPreliminar: "",
+    intervencaoCompreensiva: "",
+    intervencaoTransicional: "",
+    observacoes: "",
   });
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     if (!hasRole) return;
-
     async function loadAluno() {
       try {
         const res = await fetch(`/api/alunos/${id}`);
@@ -85,6 +133,25 @@ export default function EditarAlunoPage() {
           curso: data.curso || "",
           isSpecialNeeds: data.isSpecialNeeds,
           specialNeedsDetails: data.specialNeedsDetails || "",
+          apoioEducacional: data.apoioEducacional || [],
+          apoioOutros: data.apoioOutros || "",
+          equipePedagogica: (data.equipePedagogica || []).map(
+            (m: EquipePedagogicaMembro) => ({
+              id: m.id,
+              nome: m.nome || "",
+              funcao: m.funcao || "",
+              contato: m.contato || "",
+            })
+          ),
+          objetivosAvaliacao: data.objetivosAvaliacao || "",
+          conhecimentoEstudante: data.conhecimentoEstudante || "",
+          conhecimentoMultiplasFormas: data.conhecimentoMultiplasFormas || "",
+          conhecimentoDescricao: data.conhecimentoDescricao || "",
+          planificacaoDescricao: data.planificacaoDescricao || "",
+          intervencaoPreliminar: data.intervencaoPreliminar || "",
+          intervencaoCompreensiva: data.intervencaoCompreensiva || "",
+          intervencaoTransicional: data.intervencaoTransicional || "",
+          observacoes: data.observacoes || "",
         });
         setLoading(false);
       } catch (e) {
@@ -92,7 +159,6 @@ export default function EditarAlunoPage() {
         setLoading(false);
       }
     }
-
     loadAluno();
   }, [id, hasRole]);
 
@@ -106,13 +172,61 @@ export default function EditarAlunoPage() {
     }));
   }
 
+  function toggleApoio(opcao: string) {
+    setForm((prev) => ({
+      ...prev,
+      apoioEducacional: prev.apoioEducacional.includes(opcao)
+        ? prev.apoioEducacional.filter((o) => o !== opcao)
+        : [...prev.apoioEducacional, opcao],
+    }));
+  }
+
+  function addMembroEquipe() {
+    setForm((prev) => ({
+      ...prev,
+      equipePedagogica: [
+        ...prev.equipePedagogica,
+        { id: crypto.randomUUID(), nome: "", funcao: "", contato: "" },
+      ],
+    }));
+  }
+
+  function updateMembro(id: string, key: keyof EquipeMembro, value: string) {
+    setForm((prev) => ({
+      ...prev,
+      equipePedagogica: prev.equipePedagogica.map((m) =>
+        m.id === id ? { ...m, [key]: value } : m
+      ),
+    }));
+  }
+
+  function deleteMembro(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      equipePedagogica: prev.equipePedagogica.filter((m) => m.id !== id),
+    }));
+  }
+
+  const totalSteps = 7;
+  const progressPercent = useMemo(
+    () => Math.round(((step + 1 - 1) / (totalSteps - 1)) * 100),
+    [step]
+  );
+
+  function nextStep() {
+    setStep((s) => Math.min(totalSteps - 1, s + 1));
+  }
+  function prevStep() {
+    setStep((s) => Math.max(0, s - 1));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setFieldErrors({});
     setSaving(true);
 
-    const parsed = schema.safeParse(form);
+    const parsed = baseSchema.safeParse(form);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       parsed.error.issues.forEach((i) => {
@@ -124,10 +238,25 @@ export default function EditarAlunoPage() {
     }
 
     try {
+      const payload = {
+        ...parsed.data,
+        apoioEducacional: form.apoioEducacional,
+        apoioOutros: form.apoioOutros,
+        equipePedagogica: form.equipePedagogica,
+        objetivosAvaliacao: form.objetivosAvaliacao,
+        conhecimentoEstudante: form.conhecimentoEstudante,
+        conhecimentoMultiplasFormas: form.conhecimentoMultiplasFormas,
+        conhecimentoDescricao: form.conhecimentoDescricao,
+        planificacaoDescricao: form.planificacaoDescricao,
+        intervencaoPreliminar: form.intervencaoPreliminar,
+        intervencaoCompreensiva: form.intervencaoCompreensiva,
+        intervencaoTransicional: form.intervencaoTransicional,
+        observacoes: form.observacoes,
+      };
       const res = await fetch(`/api/alunos/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -143,7 +272,7 @@ export default function EditarAlunoPage() {
     }
   }
 
-  if (authLoading)
+  if (authLoading || loading)
     return (
       <Typography variant="body2" color="text.secondary">
         Carregando...
@@ -155,19 +284,355 @@ export default function EditarAlunoPage() {
     );
   if (!hasRole) return <Typography color="error">Acesso restrito.</Typography>;
 
-  if (loading) {
-    return (
-      <Container maxWidth="md" sx={{ py: 2 }}>
-        <Skeleton variant="text" width={200} height={40} sx={{ mb: 2 }} />
-        <Box display="flex" flexDirection="column" gap={2}>
-          <Skeleton variant="rectangular" height={56} />
-          <Skeleton variant="rectangular" height={56} />
-          <Skeleton variant="rectangular" height={56} />
-          <Skeleton variant="rectangular" height={56} />
+  // Renderização de cada step (igual ao novo)
+  // Copia a estrutura dos steps do novo aluno (importante: mantenha os mesmos campos e handlers)
+  const stepComponents: JSX.Element[] = [
+    // 1. Identificação
+    <Box key="step1" display="flex" flexDirection="column" gap={2}>
+      <Box display="flex" flexWrap="wrap" gap={2}>
+        <TextField
+          label="Nome"
+          name="nome"
+          value={form.nome}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Idade"
+          name="idade"
+          type="number"
+          value={form.idade}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Ano de Escolaridade"
+          name="yearSchooling"
+          type="number"
+          value={form.yearSchooling}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Matrícula"
+          name="matricula"
+          value={form.matricula}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Telefone"
+          name="telefone"
+          value={form.telefone}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Turma"
+          name="turma"
+          value={form.turma}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Curso"
+          name="curso"
+          value={form.curso}
+          onChange={handleChange}
+          fullWidth
+        />
+      </Box>
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          Atendimento Educacional Especializado?
+        </Typography>
+        <Box display="flex" gap={1}>
+          <Button
+            variant={form.isSpecialNeeds ? "contained" : "outlined"}
+            color="primary"
+            onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: true }))}
+          >
+            SIM
+          </Button>
+          <Button
+            variant={!form.isSpecialNeeds ? "contained" : "outlined"}
+            color="primary"
+            onClick={() => setForm((p) => ({ ...p, isSpecialNeeds: false }))}
+          >
+            NÃO
+          </Button>
         </Box>
-      </Container>
-    );
-  }
+      </Box>
+      {form.isSpecialNeeds && (
+        <TextField
+          label="Detalhes do atendimento"
+          name="specialNeedsDetails"
+          value={form.specialNeedsDetails}
+          onChange={handleChange}
+          multiline
+          minRows={3}
+          fullWidth
+        />
+      )}
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          Apoio Educacional
+        </Typography>
+        <Box display="flex" flexDirection="column" gap={0.5}>
+          {[
+            "Sala de recurso",
+            "Agente de apoio à inclusão",
+            "Biotecnologia",
+            "Outros",
+          ].map((op) => (
+            <FormControlLabel
+              key={op}
+              control={
+                <Checkbox
+                  checked={form.apoioEducacional.includes(op)}
+                  onChange={() => toggleApoio(op)}
+                />
+              }
+              label={op}
+            />
+          ))}
+        </Box>
+        {form.apoioEducacional.includes("Outros") && (
+          <TextField
+            label="Se outros, quais?"
+            name="apoioOutros"
+            value={form.apoioOutros}
+            onChange={handleChange}
+            fullWidth
+            sx={{ mt: 1 }}
+          />
+        )}
+      </Box>
+    </Box>,
+    // 2. Equipe Pedagógica & Objetivos
+    <Box key="step2" display="flex" flexDirection="column" gap={3}>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          2. Equipe Pedagógica
+        </Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small" aria-label="Tabela equipe pedagógica">
+            <TableHead>
+              <TableRow>
+                <TableCell>Nome</TableCell>
+                <TableCell>Função</TableCell>
+                <TableCell>Contato</TableCell>
+                <TableCell align="center">Ações</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {form.equipePedagogica.map((m) => (
+                <TableRow key={m.id} hover>
+                  <TableCell>
+                    <TextField
+                      value={m.nome}
+                      onChange={(e) =>
+                        updateMembro(m.id, "nome", e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                      placeholder="Nome"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      value={m.funcao}
+                      onChange={(e) =>
+                        updateMembro(m.id, "funcao", e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                      placeholder="Função"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      value={m.contato}
+                      onChange={(e) =>
+                        updateMembro(m.id, "contato", e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                      placeholder="Contato"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      aria-label="Remover"
+                      size="small"
+                      onClick={() => deleteMembro(m.id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<AddIcon />}
+                    onClick={addMembroEquipe}
+                  >
+                    Adicionar membro
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          3. Objetivos para Avaliação
+        </Typography>
+        <TextField
+          label="Descreva os objetivos para esta avaliação"
+          name="objetivosAvaliacao"
+          value={form.objetivosAvaliacao}
+          onChange={handleChange}
+          multiline
+          minRows={4}
+          fullWidth
+        />
+      </Box>
+    </Box>,
+    // 3. Conhecimento
+    <Box key="step3" display="flex" flexDirection="column" gap={3}>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          4. Conhecimento - Estudante
+        </Typography>
+        <TextField
+          label="Descreva o conhecimento do estudante"
+          name="conhecimentoEstudante"
+          value={form.conhecimentoEstudante}
+          onChange={handleChange}
+          multiline
+          minRows={4}
+          fullWidth
+        />
+      </Box>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          4.1 Múltiplas formas de representar (expressar) o conteúdo
+        </Typography>
+        <TextField
+          label="Descreva as formas múltiplas"
+          name="conhecimentoMultiplasFormas"
+          value={form.conhecimentoMultiplasFormas}
+          onChange={handleChange}
+          multiline
+          minRows={4}
+          fullWidth
+        />
+      </Box>
+      <Box>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          4.2 Conhecimento do estudante (detalhado)
+        </Typography>
+        <TextField
+          label="Detalhe adicional sobre o conhecimento"
+          name="conhecimentoDescricao"
+          value={form.conhecimentoDescricao}
+          onChange={handleChange}
+          multiline
+          minRows={4}
+          fullWidth
+        />
+      </Box>
+    </Box>,
+    // 4. Planificação
+    <Box key="step4" display="flex" flexDirection="column" gap={3}>
+      <Paper
+        variant="outlined"
+        sx={{ p: 2, bgcolor: "primary.light", opacity: 0.15 }}
+      >
+        <Typography variant="body2" fontWeight={500}>
+          Nesta seção, descreva como as diferentes disciplinas podem colaborar
+          para a avaliação do estudante.
+        </Typography>
+      </Paper>
+      <TextField
+        label="Descreva a planificação interdisciplinar"
+        name="planificacaoDescricao"
+        value={form.planificacaoDescricao}
+        onChange={handleChange}
+        multiline
+        minRows={5}
+        fullWidth
+      />
+    </Box>,
+    // 5. Intervenção
+    <Box key="step5" display="flex" flexDirection="column" gap={3}>
+      <TextField
+        label="6.1 - Intervenção Preliminar"
+        name="intervencaoPreliminar"
+        value={form.intervencaoPreliminar}
+        onChange={handleChange}
+        multiline
+        minRows={3}
+        fullWidth
+      />
+      <TextField
+        label="6.2 - Intervenção Compreensiva"
+        name="intervencaoCompreensiva"
+        value={form.intervencaoCompreensiva}
+        onChange={handleChange}
+        multiline
+        minRows={3}
+        fullWidth
+      />
+      <TextField
+        label="6.3 - Intervenção Transicional"
+        name="intervencaoTransicional"
+        value={form.intervencaoTransicional}
+        onChange={handleChange}
+        multiline
+        minRows={3}
+        fullWidth
+      />
+    </Box>,
+    // 6. Observações finais
+    <Box key="step6" display="flex" flexDirection="column" gap={3}>
+      <TextField
+        label="7. Observações"
+        name="observacoes"
+        value={form.observacoes}
+        onChange={handleChange}
+        multiline
+        minRows={6}
+        fullWidth
+      />
+    </Box>,
+    // 7. Revisão (opcional futuro)
+    <Box key="step7" display="flex" flexDirection="column" gap={2}>
+      <Typography variant="h6" fontWeight={600}>
+        Revisão (Resumo dos dados principais)
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        (Futuro) Aqui pode aparecer um resumo antes da finalização.
+      </Typography>
+    </Box>,
+  ];
 
   return (
     <Container maxWidth="md" sx={{ py: 2 }}>
@@ -189,147 +654,54 @@ export default function EditarAlunoPage() {
           </CardContent>
         </Card>
       )}
-      <Box component="form" onSubmit={handleSubmit}>
-        <Box display="flex" flexWrap="wrap" gap={2}>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Nome"
-              name="nome"
-              value={form.nome}
-              onChange={handleChange}
-              required
-              fullWidth
-              error={Boolean(fieldErrors.nome)}
-              helperText={fieldErrors.nome}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Idade"
-              name="idade"
-              type="number"
-              value={form.idade}
-              onChange={handleChange}
-              required
-              fullWidth
-              error={Boolean(fieldErrors.idade)}
-              helperText={fieldErrors.idade}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Matrícula"
-              name="matricula"
-              value={form.matricula}
-              onChange={handleChange}
-              required
-              fullWidth
-              error={Boolean(fieldErrors.matricula)}
-              helperText={fieldErrors.matricula}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              fullWidth
-              error={Boolean(fieldErrors.email)}
-              helperText={fieldErrors.email}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Telefone"
-              name="telefone"
-              value={form.telefone}
-              onChange={handleChange}
-              fullWidth
-              error={Boolean(fieldErrors.telefone)}
-              helperText={fieldErrors.telefone}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Ano Escolar"
-              name="yearSchooling"
-              type="number"
-              value={form.yearSchooling}
-              onChange={handleChange}
-              required
-              fullWidth
-              error={Boolean(fieldErrors.yearSchooling)}
-              helperText={fieldErrors.yearSchooling}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Turma"
-              name="turma"
-              value={form.turma}
-              onChange={handleChange}
-              fullWidth
-              error={Boolean(fieldErrors.turma)}
-              helperText={fieldErrors.turma}
-            />
-          </Box>
-          <Box flex="1 1 300px" maxWidth={500}>
-            <TextField
-              label="Curso"
-              name="curso"
-              value={form.curso}
-              onChange={handleChange}
-              fullWidth
-              error={Boolean(fieldErrors.curso)}
-              helperText={fieldErrors.curso}
-            />
-          </Box>
-          <Box flex="1 1 100%">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="isSpecialNeeds"
-                  checked={form.isSpecialNeeds}
-                  onChange={handleChange}
-                />
-              }
-              label="Possui necessidades especiais"
-            />
-          </Box>
-          <Box flex="1 1 100%">
-            <TextField
-              label="Detalhes"
-              name="specialNeedsDetails"
-              value={form.specialNeedsDetails}
-              onChange={handleChange}
-              multiline
-              minRows={3}
-              fullWidth
-              disabled={!form.isSpecialNeeds}
-            />
-          </Box>
-        </Box>
-        <Box display="flex" gap={2} mt={3}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={saving}
-            startIcon={saving ? <CircularProgress size={18} /> : undefined}
-          >
-            {saving ? "Salvando..." : "Salvar alterações"}
-          </Button>
+      <Box>
+        <Box display="flex" alignItems="center" gap={2} mb={2}>
           <Button
             variant="outlined"
-            color="inherit"
-            onClick={() => router.back()}
-            disabled={saving}
+            startIcon={<ArrowBackIosNewIcon />}
+            onClick={prevStep}
+            disabled={step === 0}
           >
-            Cancelar
+            Anterior
+          </Button>
+          <LinearProgress
+            variant="determinate"
+            value={progressPercent}
+            sx={{ flex: 1, height: 8, borderRadius: 4 }}
+          />
+          <Button
+            variant="outlined"
+            endIcon={<ArrowForwardIosIcon />}
+            onClick={nextStep}
+            disabled={step === stepComponents.length - 1}
+          >
+            Próximo
           </Button>
         </Box>
+        <form onSubmit={handleSubmit}>
+          {stepComponents[step]}
+          <Box display="flex" gap={2} mt={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={saving}
+              startIcon={
+                saving ? <CircularProgress size={18} /> : <SaveOutlinedIcon />
+              }
+            >
+              {saving ? "Salvando..." : "Salvar alterações"}
+            </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={() => router.back()}
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+          </Box>
+        </form>
       </Box>
     </Container>
   );

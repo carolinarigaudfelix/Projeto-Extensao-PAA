@@ -139,11 +139,44 @@ export async function GET(req: NextRequest) {
         cpf: true,
         criado: true,
         atualizado: true,
+        criadoPor: true,
+        atualizadoPor: true,
+        isActive: true,
       },
       orderBy: { criado: "desc" },
     });
 
-    return NextResponse.json(usuarios);
+    // Buscar nomes dos usuários que criaram/atualizaram
+    // Filtrar apenas IDs válidos (ObjectId do MongoDB tem 24 caracteres hexadecimais)
+    const usuarioIds = new Set<string>();
+    usuarios.forEach((u) => {
+      if (u.criadoPor && u.criadoPor.length === 24) usuarioIds.add(u.criadoPor);
+      if (u.atualizadoPor && u.atualizadoPor.length === 24)
+        usuarioIds.add(u.atualizadoPor);
+    });
+
+    const usuariosRef =
+      usuarioIds.size > 0
+        ? await prisma.usuario.findMany({
+            where: { id: { in: Array.from(usuarioIds) } },
+            select: { id: true, nome: true },
+          })
+        : [];
+
+    const usuariosMap = new Map(usuariosRef.map((u) => [u.id, u.nome]));
+
+    // Enriquecer usuários com nomes dos usuários de auditoria
+    const usuariosComNomes = usuarios.map((u) => ({
+      ...u,
+      criadoPorNome: u.criadoPor
+        ? usuariosMap.get(u.criadoPor) || u.criadoPor
+        : null,
+      atualizadoPorNome: u.atualizadoPor
+        ? usuariosMap.get(u.atualizadoPor) || u.atualizadoPor
+        : null,
+    }));
+
+    return NextResponse.json(usuariosComNomes);
   } catch (error) {
     console.error("Erro ao listar usuários:", error);
     return NextResponse.json(

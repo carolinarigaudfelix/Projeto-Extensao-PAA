@@ -152,6 +152,11 @@ export default function AlunosPage() {
               <TableCell sx={{ fontWeight: 600 }}>Curso</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Turma</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Planejamento</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Criado em</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Criado por</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Atualizado em</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Atualizado por</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
               <TableCell sx={{ fontWeight: 600 }} align="right">
                 Ações
               </TableCell>
@@ -219,6 +224,19 @@ export default function AlunosPage() {
                         )}
                     </Stack>
                   </TableCell>
+                  <TableCell>
+                    {a.criado ? new Date(a.criado).toLocaleString() : "-"}
+                  </TableCell>
+                  <TableCell>{a.criadoPorNome || a.criadoPor || "-"}</TableCell>
+                  <TableCell>
+                    {a.atualizado
+                      ? new Date(a.atualizado).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {a.atualizadoPorNome || a.atualizadoPor || "-"}
+                  </TableCell>
+                  <TableCell>{a.isActive ? "Ativo" : "Inativo"}</TableCell>
                   <TableCell align="right">
                     <Button
                       component={NextLink}
