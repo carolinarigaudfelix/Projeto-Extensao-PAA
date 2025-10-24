@@ -630,14 +630,328 @@ export default function NovoAlunoPage() {
         fullWidth
       />
     </Box>,
-    // 7. Revisão (opcional futuro)
-    <Box key="step7" display="flex" flexDirection="column" gap={2}>
+    // 7. Revisão
+    <Box key="step7" display="flex" flexDirection="column" gap={3}>
       <Typography variant="h6" fontWeight={600}>
         Revisão (Resumo dos dados principais)
       </Typography>
-      <Typography variant="body2" color="text.secondary">
-        (Futuro) Aqui pode aparecer um resumo antes da finalização.
-      </Typography>
+
+      {/* Informações Pessoais */}
+      <Card variant="outlined">
+        <CardContent>
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+            color="primary"
+            gutterBottom
+          >
+            📋 Informações Pessoais
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Typography variant="body2">
+              <strong>Nome:</strong> {form.nome || "(não informado)"}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Idade:</strong> {form.idade || "(não informado)"}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Matrícula:</strong> {form.matricula || "(não informado)"}
+            </Typography>
+            {form.email && (
+              <Typography variant="body2">
+                <strong>Email:</strong> {form.email}
+              </Typography>
+            )}
+            {form.telefone && (
+              <Typography variant="body2">
+                <strong>Telefone:</strong> {form.telefone}
+              </Typography>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Informações Acadêmicas */}
+      <Card variant="outlined">
+        <CardContent>
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+            color="primary"
+            gutterBottom
+          >
+            🎓 Informações Acadêmicas
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Typography variant="body2">
+              <strong>Ano Escolar:</strong>{" "}
+              {form.yearSchooling || "(não informado)"}
+            </Typography>
+            {form.turma && (
+              <Typography variant="body2">
+                <strong>Turma:</strong> {form.turma}
+              </Typography>
+            )}
+            {form.curso && (
+              <Typography variant="body2">
+                <strong>Curso:</strong> {form.curso}
+              </Typography>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Necessidades Especiais */}
+      <Card variant="outlined">
+        <CardContent>
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+            color="primary"
+            gutterBottom
+          >
+            ♿ Necessidades Especiais
+          </Typography>
+          <Typography variant="body2">
+            <strong>Possui necessidades especiais:</strong>{" "}
+            {form.isSpecialNeeds ? "Sim" : "Não"}
+          </Typography>
+          {form.isSpecialNeeds && form.specialNeedsDetails && (
+            <Box mt={1}>
+              <Typography variant="body2" color="text.secondary">
+                {form.specialNeedsDetails}
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Apoio Educacional */}
+      {form.apoioEducacional.length > 0 && (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              🤝 Apoio Educacional
+            </Typography>
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              {form.apoioEducacional.map((apoio) => (
+                <Box
+                  key={apoio}
+                  sx={{
+                    px: 1.5,
+                    py: 0.5,
+                    bgcolor: "primary.light",
+                    color: "primary.contrastText",
+                    borderRadius: 1,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {apoio}
+                </Box>
+              ))}
+            </Box>
+            {form.apoioOutros && (
+              <Box mt={2}>
+                <Typography variant="body2">
+                  <strong>Outros apoios:</strong> {form.apoioOutros}
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Equipe Pedagógica */}
+      {form.equipePedagogica.length > 0 && (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              👥 Equipe Pedagógica ({form.equipePedagogica.length} membro
+              {form.equipePedagogica.length !== 1 ? "s" : ""})
+            </Typography>
+            <Box display="flex" flexDirection="column" gap={1.5}>
+              {form.equipePedagogica.map((membro, idx) => (
+                <Box
+                  key={membro.id}
+                  sx={{ pl: 2, borderLeft: 2, borderColor: "divider" }}
+                >
+                  <Typography variant="body2">
+                    <strong>{idx + 1}.</strong> {membro.nome || "(sem nome)"}
+                  </Typography>
+                  {membro.funcao && (
+                    <Typography variant="body2" color="text.secondary">
+                      Função: {membro.funcao}
+                    </Typography>
+                  )}
+                  {membro.contato && (
+                    <Typography variant="body2" color="text.secondary">
+                      Contato: {membro.contato}
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Planejamento de Avaliação */}
+      {(form.objetivosAvaliacao ||
+        form.conhecimentoEstudante ||
+        form.conhecimentoMultiplasFormas ||
+        form.conhecimentoDescricao) && (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              📊 Planejamento de Avaliação
+            </Typography>
+            <Box display="flex" flexDirection="column" gap={2}>
+              {form.objetivosAvaliacao && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Objetivos da Avaliação:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.objetivosAvaliacao}
+                  </Typography>
+                </Box>
+              )}
+              {form.conhecimentoEstudante && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Conhecimento do Estudante:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.conhecimentoEstudante}
+                  </Typography>
+                </Box>
+              )}
+              {form.conhecimentoMultiplasFormas && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Múltiplas Formas de Representação:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.conhecimentoMultiplasFormas}
+                  </Typography>
+                </Box>
+              )}
+              {form.conhecimentoDescricao && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Descrição Adicional:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.conhecimentoDescricao}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Intervenções */}
+      {(form.planificacaoDescricao ||
+        form.intervencaoPreliminar ||
+        form.intervencaoCompreensiva ||
+        form.intervencaoTransicional) && (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              🎯 Intervenções e Planificação
+            </Typography>
+            <Box display="flex" flexDirection="column" gap={2}>
+              {form.planificacaoDescricao && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Planificação Interdisciplinar:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.planificacaoDescricao}
+                  </Typography>
+                </Box>
+              )}
+              {form.intervencaoPreliminar && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Intervenção Preliminar:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.intervencaoPreliminar}
+                  </Typography>
+                </Box>
+              )}
+              {form.intervencaoCompreensiva && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Intervenção Compreensiva:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.intervencaoCompreensiva}
+                  </Typography>
+                </Box>
+              )}
+              {form.intervencaoTransicional && (
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    Intervenção Transicional:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {form.intervencaoTransicional}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Observações Finais */}
+      {form.observacoes && (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography
+              variant="subtitle1"
+              fontWeight={600}
+              color="primary"
+              gutterBottom
+            >
+              📝 Observações Finais
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {form.observacoes}
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
+
+      <Box mt={2} p={2} bgcolor="info.light" borderRadius={1}>
+        <Typography variant="body2" color="info.dark">
+          ℹ️ Revise todas as informações acima antes de salvar. Você pode voltar
+          aos passos anteriores para fazer alterações.
+        </Typography>
+      </Box>
     </Box>,
   ];
 
