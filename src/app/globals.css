@@ -40,3 +40,13 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Regras globais para impressão */
+@media print {
+  [data-print-hidden] {
+    display: none;
+  }
+  body {
+    background: white;
+  }
+}
