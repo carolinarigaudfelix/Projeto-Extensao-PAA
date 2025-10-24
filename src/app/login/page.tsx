@@ -99,7 +99,7 @@ export default function LoginPage() {
                   color="text.secondary"
                   sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                 >
-                  Programa de Apoio Acadêmico
+                  Planejamento de Acessibilidade na Avaliação
                 </Typography>
               }
             />

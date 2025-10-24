@@ -1,6 +1,6 @@
 # Projeto de Extensão PAA
 
-Sistema de gestão para o Programa de Apoio Acadêmico (PAA) da UERJ.
+Sistema de gestão para o Planejamento de Acessibilidade na Avaliação (PAA) da UERJ.
 
 ## 🛠 Tecnologias
 
