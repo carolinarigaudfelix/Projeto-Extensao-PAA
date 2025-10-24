@@ -42,14 +42,23 @@ export default function LoginPage() {
         redirect: false,
       });
       if (result?.error) {
-        setError(result.error);
+        // NextAuth v5 retorna "CredentialsSignin" como tipo de erro
+        // A mensagem real está em result.error ou result.code
+        if (result.error === "CredentialsSignin") {
+          setError(
+            "Email ou senha incorretos. Verifique suas credenciais e tente novamente."
+          );
+        } else {
+          setError(result.error);
+        }
         setLoading(false);
         return;
       }
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("Erro ao fazer login");
+    } catch (err) {
+      console.error("Erro durante o login:", err);
+      setError("Erro ao fazer login. Tente novamente.");
       setLoading(false);
     }
   }
