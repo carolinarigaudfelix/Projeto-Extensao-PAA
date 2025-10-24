@@ -125,14 +125,22 @@ export async function DELETE(req: Request) {
         { status: auth.code },
       );
 
+    // Restrição adicional: somente administradores podem desativar alunos
+    const token = auth.token as unknown as TokenPayload;
+    if (token.tipo !== 'ADMIN') {
+      return NextResponse.json(
+        { message: 'Apenas administradores podem desativar alunos.' },
+        { status: 403 },
+      );
+    }
+
     const url = new URL(req.url);
     const parts = url.pathname.split('/').filter(Boolean);
     const id = parts[parts.length - 1];
 
-    const payload = auth.token as unknown as TokenPayload;
     const estudanteDesativado = await prisma.estudante.update({
       where: { id },
-      data: { isActive: false, atualizadoPor: payload.id },
+      data: { isActive: false, atualizadoPor: token.id },
     });
 
     return NextResponse.json({

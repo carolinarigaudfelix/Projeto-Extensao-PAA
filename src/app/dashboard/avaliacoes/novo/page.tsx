@@ -1,6 +1,5 @@
-"use client";
+'use client';
 
-import type { Estudante } from "@/types/estudante";
 import {
   Box,
   Button,
@@ -10,26 +9,27 @@ import {
   MenuItem,
   TextField,
   Typography,
-} from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+} from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import type { Estudante } from '@/types/estudante';
 
 function NovaAvaliacaoPageInner() {
   const searchParams = useSearchParams();
-  const alunoId = searchParams.get("aluno");
+  const alunoId = searchParams.get('aluno');
 
   const [form, setForm] = useState({
-    estudanteId: alunoId || "",
-    avaliadorId: "",
+    estudanteId: alunoId || '',
+    avaliadorId: '',
     data: new Date().toISOString().slice(0, 10),
-    descricao: "",
-    evolucao: "",
-    dificuldades: "",
-    periodoReavaliacao: "",
+    descricao: '',
+    evolucao: '',
+    dificuldades: '',
+    periodoReavaliacao: '',
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [estudantes, setEstudantes] = useState<Estudante[]>([]);
   const [avaliadores, setAvaliadores] = useState<
     { id: string; nome: string }[]
@@ -38,21 +38,21 @@ function NovaAvaliacaoPageInner() {
 
   // Carregar estudantes e avaliadores ao montar
   useEffect(() => {
-    fetch("/api/alunos?includeInactive=false")
+    fetch('/api/alunos?includeInactive=false')
       .then((r) => r.json())
       .then(setEstudantes)
       .catch(console.error);
 
-    fetch("/api/usuarios")
+    fetch('/api/usuarios')
       .then((r) => r.json())
       .then((data) => {
         // Filtrar apenas usuários ativos
         const pedagogos = data.filter(
           (u: { tipo: string; isActive: boolean }) =>
-            (u.tipo === "PEDAGOGO" ||
-              u.tipo === "PROFESSOR" ||
-              u.tipo === "COORDENADOR") &&
-            u.isActive
+            (u.tipo === 'PEDAGOGO' ||
+              u.tipo === 'PROFESSOR' ||
+              u.tipo === 'COORDENADOR') &&
+            u.isActive,
         );
         setAvaliadores(pedagogos);
       })
@@ -63,40 +63,44 @@ function NovaAvaliacaoPageInner() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(
+    e: React.FormEvent,
+    status: 'DRAFT' | 'FINAL' = 'FINAL',
+  ) {
     e.preventDefault();
     setSaving(true);
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
     try {
       const payload = {
         ...form,
         periodoReavaliacao: form.periodoReavaliacao
           ? parseInt(form.periodoReavaliacao, 10)
           : undefined,
+        status,
       };
 
-      const res = await fetch("/api/avaliacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/avaliacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Falha ao criar avaliação");
+        throw new Error(errorData.message || 'Falha ao criar avaliação');
       }
 
-      setSuccess("Avaliação criada com sucesso!");
+      setSuccess('Avaliação criada com sucesso!');
       setTimeout(() => {
         if (alunoId) {
           router.push(`/dashboard/alunos/${alunoId}`);
         } else {
-          router.push("/dashboard/avaliacoes");
+          router.push('/dashboard/avaliacoes');
         }
       }, 1000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro inesperado");
+      setError(e instanceof Error ? e.message : 'Erro inesperado');
     } finally {
       setSaving(false);
     }
@@ -222,7 +226,7 @@ function NovaAvaliacaoPageInner() {
             {error && (
               <Card
                 variant="outlined"
-                sx={{ mt: 2, borderColor: "error.light" }}
+                sx={{ mt: 2, borderColor: 'error.light' }}
               >
                 <CardContent>
                   <Typography variant="body2" color="error.main">
@@ -235,7 +239,7 @@ function NovaAvaliacaoPageInner() {
             {success && (
               <Card
                 variant="outlined"
-                sx={{ mt: 2, borderColor: "success.light" }}
+                sx={{ mt: 2, borderColor: 'success.light' }}
               >
                 <CardContent>
                   <Typography variant="body2" color="success.main">
@@ -247,15 +251,6 @@ function NovaAvaliacaoPageInner() {
 
             <Box mt={3} display="flex" gap={2}>
               <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={saving}
-                size="large"
-              >
-                {saving ? <CircularProgress size={18} /> : "Salvar Avaliação"}
-              </Button>
-              <Button
                 variant="outlined"
                 color="inherit"
                 onClick={() => router.back()}
@@ -263,6 +258,25 @@ function NovaAvaliacaoPageInner() {
                 size="large"
               >
                 Cancelar
+              </Button>
+              <Button
+                onClick={(e) => handleSubmit(e, 'DRAFT')}
+                variant="outlined"
+                color="primary"
+                disabled={saving}
+                size="large"
+              >
+                {saving ? <CircularProgress size={18} /> : 'Salvar rascunho'}
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => handleSubmit(e, 'FINAL')}
+                variant="contained"
+                color="primary"
+                disabled={saving}
+                size="large"
+              >
+                {saving ? <CircularProgress size={18} /> : 'Finalizar'}
               </Button>
             </Box>
           </form>

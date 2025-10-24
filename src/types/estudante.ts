@@ -12,6 +12,10 @@ export interface AvaliacaoResumo {
   id: string;
   data: string; // Date ISO string vinda do backend
   descricao: string;
+  status?: 'DRAFT' | 'FINAL';
+  periodoReavaliacao?: number; // em dias, opcional
+  evolucao?: string;
+  dificuldades?: string;
   avaliador?: {
     nome?: string;
     cargo?: string;

@@ -25,6 +25,9 @@ export default function AvaliacoesPage() {
   const [alunos, setAlunos] = useState<Estudante[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState<
+    'ALL' | 'DRAFT' | 'FINAL' | 'OVERDUE'
+  >('ALL');
 
   useEffect(() => {
     async function fetchAlunos() {
@@ -87,137 +90,209 @@ export default function AvaliacoesPage() {
           </CardContent>
         </Card>
       ) : (
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Aluno</TableCell>
-                <TableCell>Matrícula</TableCell>
-                <TableCell>Última Avaliação</TableCell>
-                <TableCell>Evolução</TableCell>
-                <TableCell>Dificuldades</TableCell>
-                <TableCell>Próxima Reavaliação</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="center">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {alunos.length === 0 ? (
+        <>
+          <Box display="flex" gap={1} mb={2}>
+            <Button
+              size="small"
+              variant={statusFiltro === 'ALL' ? 'contained' : 'outlined'}
+              onClick={() => setStatusFiltro('ALL')}
+            >
+              Todos
+            </Button>
+            <Button
+              size="small"
+              variant={statusFiltro === 'DRAFT' ? 'contained' : 'outlined'}
+              onClick={() => setStatusFiltro('DRAFT')}
+            >
+              Rascunho
+            </Button>
+            <Button
+              size="small"
+              variant={statusFiltro === 'FINAL' ? 'contained' : 'outlined'}
+              onClick={() => setStatusFiltro('FINAL')}
+            >
+              Finalizadas
+            </Button>
+            <Button
+              size="small"
+              variant={statusFiltro === 'OVERDUE' ? 'contained' : 'outlined'}
+              color={statusFiltro === 'OVERDUE' ? 'error' : 'inherit'}
+              onClick={() => setStatusFiltro('OVERDUE')}
+            >
+              Vencidas
+            </Button>
+          </Box>
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    <Box py={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        Nenhum aluno encontrado.
-                      </Typography>
-                    </Box>
-                  </TableCell>
+                  <TableCell>Aluno</TableCell>
+                  <TableCell>Matrícula</TableCell>
+                  <TableCell>Última Avaliação</TableCell>
+                  <TableCell>Evolução</TableCell>
+                  <TableCell>Dificuldades</TableCell>
+                  <TableCell>Próxima Reavaliação</TableCell>
+                  <TableCell>Status da Avaliação</TableCell>
+                  <TableCell align="center">Ações</TableCell>
                 </TableRow>
-              ) : (
-                alunos.map((aluno) => {
-                  const ultima:
-                    | (AvaliacaoResumo & {
-                        periodoReavaliacao?: number;
-                        evolucao?: string;
-                        dificuldades?: string;
-                      })
-                    | null =
-                    aluno.avaliacoes && aluno.avaliacoes.length > 0
-                      ? aluno.avaliacoes[0]
-                      : null;
-                  let proxima = '-';
-                  let isVencida = false;
-                  if (ultima?.periodoReavaliacao && ultima?.data) {
-                    const prox = new Date(ultima.data);
-                    prox.setDate(
-                      prox.getDate() + (ultima.periodoReavaliacao || 0),
-                    );
-                    proxima = prox.toLocaleDateString('pt-BR');
-                    isVencida = prox < new Date();
-                  }
-                  return (
-                    <TableRow key={aluno.id}>
-                      <TableCell>
-                        <Button
-                          component={NextLink}
-                          href={`/dashboard/alunos/${aluno.id}`}
-                          variant="text"
-                          size="small"
-                          sx={{ textTransform: 'none' }}
-                        >
-                          {aluno.nome}
-                        </Button>
-                      </TableCell>
-                      <TableCell>{aluno.matricula}</TableCell>
-                      <TableCell>
-                        {ultima
-                          ? new Date(ultima.data).toLocaleDateString('pt-BR')
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            maxWidth: 200,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                          title={ultima?.evolucao || '-'}
-                        >
-                          {ultima?.evolucao || '-'}
+              </TableHead>
+              <TableBody>
+                {alunos.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      <Box py={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          Nenhum aluno encontrado.
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            maxWidth: 200,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                          title={ultima?.dificuldades || '-'}
-                        >
-                          {ultima?.dificuldades || '-'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {proxima !== '-' ? (
-                          <Chip
-                            label={proxima}
-                            size="small"
-                            color={isVencida ? 'error' : 'success'}
-                            variant="filled"
-                          />
-                        ) : (
-                          '-'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={aluno.isActive ? 'Ativo' : 'Inativo'}
-                          size="small"
-                          color={aluno.isActive ? 'success' : 'default'}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Button
-                          component={NextLink}
-                          variant="outlined"
-                          size="small"
-                          href={`/dashboard/avaliacoes/novo?aluno=${aluno.id}`}
-                        >
-                          Nova Avaliação
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  alunos
+                    .filter((aluno) => {
+                      if (statusFiltro === 'ALL') return true;
+
+                      const ultima = aluno.avaliacoes?.[0];
+                      if (!ultima) return false;
+
+                      // Filtro "Vencidas" - mostrar se tem reavaliação vencida
+                      if (statusFiltro === 'OVERDUE') {
+                        if (!(ultima.periodoReavaliacao && ultima.data))
+                          return false;
+                        const prox = new Date(ultima.data);
+                        prox.setDate(
+                          prox.getDate() + (ultima.periodoReavaliacao || 0),
+                        );
+                        return prox < new Date();
+                      }
+
+                      return ultima.status === statusFiltro;
+                    })
+                    .map((aluno) => {
+                      const ultima:
+                        | (AvaliacaoResumo & {
+                            periodoReavaliacao?: number;
+                            evolucao?: string;
+                            dificuldades?: string;
+                            status?: 'DRAFT' | 'FINAL';
+                          })
+                        | null =
+                        aluno.avaliacoes && aluno.avaliacoes.length > 0
+                          ? aluno.avaliacoes[0]
+                          : null;
+                      let proxima = '-';
+                      let isVencida = false;
+                      if (ultima?.periodoReavaliacao && ultima?.data) {
+                        const prox = new Date(ultima.data);
+                        prox.setDate(
+                          prox.getDate() + (ultima.periodoReavaliacao || 0),
+                        );
+                        proxima = prox.toLocaleDateString('pt-BR');
+                        isVencida = prox < new Date();
+                      }
+                      return (
+                        <TableRow key={aluno.id}>
+                          <TableCell>
+                            <Button
+                              component={NextLink}
+                              href={`/dashboard/alunos/${aluno.id}`}
+                              variant="text"
+                              size="small"
+                              sx={{ textTransform: 'none' }}
+                            >
+                              {aluno.nome}
+                            </Button>
+                          </TableCell>
+                          <TableCell>{aluno.matricula}</TableCell>
+                          <TableCell>
+                            {ultima
+                              ? new Date(ultima.data).toLocaleDateString(
+                                  'pt-BR',
+                                )
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                maxWidth: 200,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                              title={ultima?.evolucao || '-'}
+                            >
+                              {ultima?.evolucao || '-'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                maxWidth: 200,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                              title={ultima?.dificuldades || '-'}
+                            >
+                              {ultima?.dificuldades || '-'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {proxima !== '-' ? (
+                              <Chip
+                                label={proxima}
+                                size="small"
+                                color={isVencida ? 'error' : 'success'}
+                                variant="filled"
+                              />
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {ultima ? (
+                              <Chip
+                                label={
+                                  ultima.status === 'FINAL'
+                                    ? 'Finalizada'
+                                    : 'Rascunho'
+                                }
+                                size="small"
+                                color={
+                                  ultima.status === 'FINAL'
+                                    ? 'success'
+                                    : 'warning'
+                                }
+                                variant={
+                                  ultima.status === 'FINAL'
+                                    ? 'filled'
+                                    : 'outlined'
+                                }
+                              />
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Button
+                              component={NextLink}
+                              variant="outlined"
+                              size="small"
+                              href={`/dashboard/avaliacoes/novo?aluno=${aluno.id}`}
+                            >
+                              Nova Avaliação
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
     </Box>
   );
